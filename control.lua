@@ -25,8 +25,10 @@ local function onTickManager(manager)
         elseif readsig > 0 and readsig <= 512 then
           -- read a frame to cc2
           local tapedata = tape.get_tag("disk_"..readsig)
-          manager.cc2.get_or_create_control_behavior().parameters={parameters = tapedata}
-          manager.clearcc2 = true
+          if tapedata then
+            manager.cc2.get_or_create_control_behavior().parameters={parameters = tapedata}
+            manager.clearcc2 = true
+          end
 
         end
       else
