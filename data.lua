@@ -9,6 +9,20 @@ data:extend{
     stack_size = 1
   },
   {
+    type = "recipe",
+    name = "disk",
+    enabled = true,
+    energy_required = 1,
+    ingredients =
+    {
+      {"processing-unit",1},
+      {"advanced-circuit", 10}
+    },
+    result = "disk",
+    result_count = 1,
+    icon = "__base__/graphics/icons/processing-unit.png",
+  },
+  {
     type = "item",
     name = "diskreader",
     icon = "__base__/graphics/icons/roboport.png",
@@ -17,6 +31,20 @@ data:extend{
     order = "c[signal]-b[diskreader]",
     place_result="diskreader",
     stack_size = 50,
+  },
+  {
+    type = "recipe",
+    name = "diskreader",
+    enabled = true,
+    energy_required = 1,
+    ingredients =
+    {
+      {"processing-unit", 2},
+      {"decider-combinator",5}
+    },
+    result = "diskreader",
+    result_count = 1,
+    icon = "__base__/graphics/icons/roboport.png",
   },
   {
     type = "item",
@@ -45,7 +73,7 @@ data:extend{
     },
     result = "disk",
     result_count = 1,
-    icon = "__base__/graphics/icons/roboport.png",
+    icon = "__base__/graphics/icons/processing-unit.png",
   },
 
   {

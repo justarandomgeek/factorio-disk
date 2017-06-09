@@ -121,7 +121,7 @@ script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_built_entity, onBuilt)
 script.on_event(defines.events.on_robot_built_entity, onBuilt)
 
-remote.add_interface('diskreader',{
+remote.add_interface('disk',{
   export = ExportTape,
   import = ImportTape,
 })

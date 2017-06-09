@@ -2,10 +2,10 @@
   "name": "disk",
   "version": "0.15.0",
   "factorio_version": "0.15",
-  "title": "DISK - Dense Integrated Storage Kludge",
+  "title": "DISK",
   "author": "justarandomgeek",
   "homepage": "",
   "contact": "justarandomgeek@gmail.com",
-  "description": "A removable data storage device for circuit networks.",
+  "description": "Dense Integrated Storage Kludge: A removable data storage device for circuit networks holding 512 circuit frames.",
   "dependencies": ["base >= 0.15.0"]
 }
