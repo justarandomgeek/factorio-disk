@@ -1,6 +1,7 @@
+local json = require('dkjson')
 --TODO: create in-game editor interface and import/export strings for tapes
 
-local signalblacklist = {["signal-datareader-read"]=true, ["signal-datareader-write"]=true}
+local signalblacklist = {["signal-diskreader-read"]=true, ["signal-diskreader-write"]=true}
 
 local function onTickManager(manager)
   if manager.clearcc2 then
@@ -9,29 +10,28 @@ local function onTickManager(manager)
   end
 
   local tape = manager.ent.get_inventory(defines.inventory.furnace_source)[1]
-  if tape and tape.valid_for_read and tape.name=="datatape" then
+  if tape and tape.valid_for_read and tape.name=="disk" then
 
     -- read cc1 signals. Only uses one wire, red if both connected.
     local signet1 = manager.cc1.get_circuit_network(defines.wire_type.red) or manager.cc1.get_circuit_network(defines.wire_type.green)
     if signet1 and signet1.signals and #signet1.signals > 0 then
-      local readsig = signet1.get_signal({name="signal-datareader-read",type="virtual"})
+      local readsig = signet1.get_signal({name="signal-diskreader-read",type="virtual"})
       if readsig ~= 0 then
-        -- eject tape or read data
         if readsig == -1 then
           -- eject tape
           manager.ent.get_inventory(defines.inventory.furnace_result)[1].set_stack(tape)
           tape.clear()
 
-        elseif readsig > 0 and readsig <= 256 then
+        elseif readsig > 0 and readsig <= 512 then
           -- read a frame to cc2
-          local tapedata = tape.get_tag("datatape") or {}
-          manager.cc2.get_or_create_control_behavior().parameters.parameters = tapedata[readsig]
+          local tapedata = tape.get_tag("disk_"..readsig)
+          manager.cc2.get_or_create_control_behavior().parameters={parameters = tapedata}
           manager.clearcc2 = true
 
         end
       else
-        local writesig = signet1.get_signal({name="signal-datareader-write",type="virtual"})
-        if writesig > 0 and writesig <= 256 then
+        local writesig = signet1.get_signal({name="signal-diskreader-write",type="virtual"})
+        if writesig > 0 and writesig <= 512 then
           -- write data from cc1 with read/write stripped
           local storeframe = {}
           for i,signal in pairs(signet1.signals) do
@@ -39,15 +39,17 @@ local function onTickManager(manager)
               storeframe[#storeframe+1] = {index=#storeframe+1, count=signal.count, signal=signal.signal}
             end
           end
-          local tapedata = tape.get_tag("datatape") or {}
-          tapedata[writesig] = storeframe
-          tape.set_tag("datatape", tapedata)
+          if #storeframe > 0 then
+            tape.set_tag("disk_"..writesig, storeframe)
+          else
+            tape.set_tag("disk_"..writesig, nil)
+          end
+
         end
       end
     end
   end
 end
-
 
 local function onTick()
   if global.managers then
@@ -73,7 +75,7 @@ local function CreateControl(manager,position)
   end
 
   local ent = ghost or manager.surface.create_entity{
-      name='datareader-control',
+      name='diskreader-control',
       position = position,
       force = manager.force
     }
@@ -87,7 +89,7 @@ end
 
 local function onBuilt(event)
   local ent = event.created_entity
-  if ent.name == "datareader" then
+  if ent.name == "diskreader" then
 
     ent.active = false
     --ent.operable = false
@@ -101,10 +103,25 @@ local function onBuilt(event)
   end
 end
 
+local function ExportTape(tape)
+  local data = {}
+  for i = 1,512 do
+    data[tostring(i)] = tape.get_tag("disk_"..i)
+  end
+  return json.encode{label=tape.label, data=data}
+end
+
+local function ImportTape(tape,data)
+  local decode = json.decode(data)
+  tape.label = decode.label
+  tape.set_tag("disk",decode.data)
+end
+
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_built_entity, onBuilt)
 script.on_event(defines.events.on_robot_built_entity, onBuilt)
 
-remote.add_interface('datareader',{
-  --TODO: interface to read/write tapes?
+remote.add_interface('diskreader',{
+  export = ExportTape,
+  import = ImportTape,
 })

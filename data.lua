@@ -1,7 +1,7 @@
 data:extend{
   {
     type = "item-with-tags",
-    name = "datatape",
+    name = "disk",
     icon = "__base__/graphics/icons/processing-unit.png",
     flags = {},
     subgroup = "other",
@@ -10,82 +10,83 @@ data:extend{
   },
   {
     type = "item",
-    name = "datareader",
+    name = "diskreader",
     icon = "__base__/graphics/icons/roboport.png",
     flags = {"goes-to-quickbar"},
     subgroup = "logistic-network",
-    order = "c[signal]-b[datareader]",
-    place_result="datareader",
+    order = "c[signal]-b[diskreader]",
+    place_result="diskreader",
     stack_size = 50,
   },
   {
     type = "item",
-    name = "datareader-control",
+    name = "diskreader-control",
     icon = "__base__/graphics/icons/roboport.png",
     flags = {"goes-to-quickbar", "hidden"},
     subgroup = "logistic-network",
-    order = "c[signal]-b[datareader-control]",
-    place_result="datareader-control",
+    order = "c[signal]-b[diskreader-control]",
+    place_result="diskreader-control",
     stack_size = 50,
   },
   {
     type = "recipe-category",
-    name = "datareader"
+    name = "diskreader"
   },
   {
     type = "recipe",
-    name = "datareader-process",
+    name = "diskreader-process",
     enabled = true,
+    hidden = true,
     energy_required = 1,
-    category = "datareader",
+    category = "diskreader",
     ingredients =
     {
-      {"datatape", 1}
+      {"disk", 1}
     },
-    result = "datatape",
+    result = "disk",
     result_count = 1,
     icon = "__base__/graphics/icons/roboport.png",
   },
 
   {
     type = "item-subgroup",
-    name = "virtual-signal-datareader",
+    name = "virtual-signal-diskreader",
     group = "signals",
     order = "z"
   },
   {
     type = "virtual-signal",
-    name = "signal-datareader-read",
+    name = "signal-diskreader-read",
     icon = "__base__/graphics/icons/signal/signal_R.png",
-    subgroup = "virtual-signal-datareader",
-    order = "z[datareader]-[R]"
+    subgroup = "virtual-signal-diskreader",
+    order = "z[diskreader]-[R]"
   },
   {
     type = "virtual-signal",
-    name = "signal-datareader-write",
+    name = "signal-diskreader-write",
     icon = "__base__/graphics/icons/signal/signal_W.png",
-    subgroup = "virtual-signal-datareader",
-    order = "z[datareader]-[W]"
+    subgroup = "virtual-signal-diskreader",
+    order = "z[diskreader]-[W]"
   },
 
 }
 
 
-local datareaderent = table.deepcopy(data.raw["furnace"]["electric-furnace"])
-datareaderent.name="datareader"
-datareaderent.minable.result = "datareader"
-datareaderent.fast_replaceable_group = nil
-datareaderent.crafting_categories = {"datareader"}
-datareaderent.crafting_speed = 1
-datareaderent.module_specification = nil
-datareaderent.allowed_effects = nil
-datareaderent.collision_box = {{-1.2, -1.2}, {1.2, 0.8}} -- collision_box = {{-1.2, -1.2}, {1.2, 1.2}}
-data:extend{datareaderent}
+local diskreaderent = table.deepcopy(data.raw["furnace"]["electric-furnace"])
+diskreaderent.name="diskreader"
+diskreaderent.minable.result = "diskreader"
+diskreaderent.fast_replaceable_group = nil
+diskreaderent.crafting_categories = {"diskreader"}
+diskreaderent.crafting_speed = 1
+diskreaderent.module_specification = nil
+diskreaderent.allowed_effects = nil
+diskreaderent.collision_box = {{-1.2, -1.2}, {1.2, 0.8}} -- collision_box = {{-1.2, -1.2}, {1.2, 1.2}}
+data:extend{diskreaderent}
 
-local datareaderctrl = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
-datareaderctrl.name="datareader-control"
-datareaderctrl.minable= nil
-datareaderctrl.order="z[lol]-[datareaderctrl]"
-datareaderctrl.item_slot_count = 500
-datareaderctrl.collision_box = {{-0.4,  0.0}, {0.4, 0.4}}
-data:extend{datareaderctrl}
+local diskreaderctrl = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
+diskreaderctrl.name="diskreader-control"
+diskreaderctrl.minable= nil
+diskreaderctrl.order="z[lol]-[diskreaderctrl]"
+diskreaderctrl.item_slot_count = 500
+diskreaderctrl.collision_box = {{-0.4,  0.0}, {0.4, 0.4}}
+data:extend{diskreaderctrl}

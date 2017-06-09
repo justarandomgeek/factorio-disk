@@ -1,11 +1,11 @@
 {
-  "name": "datatape",
+  "name": "disk",
   "version": "0.15.0",
   "factorio_version": "0.15",
-  "title": "Data Tape",
+  "title": "DISK - Dense Integrated Storage Kludge",
   "author": "justarandomgeek",
   "homepage": "",
   "contact": "justarandomgeek@gmail.com",
-  "description": "Tapes for more portable data!",
+  "description": "A removable data storage device for circuit networks.",
   "dependencies": ["base >= 0.15.0"]
 }
