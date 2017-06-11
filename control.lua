@@ -1,4 +1,7 @@
-local json = require('dkjson')
+local json = require "dkjson"
+local inflate = require "deflatelua"
+local deflate = require "zlib-deflate"
+local base64 = require "base64"
 
 local signalblacklist = {["signal-diskreader-read"]=true, ["signal-diskreader-write"]=true}
 
@@ -109,11 +112,14 @@ local function ExportDisk(disk)
   for i = 1,512 do
     data[tostring(i)] = disk.get_tag("disk_"..i)
   end
-  return json.encode{label=disk.label, data=data}
+  return base64.enc(deflate.gzip(json.encode{label=disk.label, data=data}))
 end
 
 local function ImportDisk(disk,data)
-  local decode = json.decode(data)
+  local output = {}
+  local ok = pcall(inflate.gunzip, {input = base64.dec(data), output = function(byte) output[#output+1] = string.char(byte) end })
+  if not ok then return false end
+  local decode = json.decode(table.concat(output))
   if decode then
     if decode.label then disk.label = decode.label end
     if decode.data then
