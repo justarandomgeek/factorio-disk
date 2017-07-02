@@ -96,6 +96,13 @@ data:extend{
     subgroup = "virtual-signal-diskreader",
     order = "z[diskreader]-[W]"
   },
+  {
+    type = "virtual-signal",
+    name = "signal-diskreader-status",
+    icon = "__base__/graphics/icons/signal/signal_S.png",
+    subgroup = "virtual-signal-diskreader",
+    order = "z[diskreader]-[S]"
+  },
 
 }
 
