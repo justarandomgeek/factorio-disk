@@ -2,7 +2,7 @@ data:extend{
   {
     type = "item-with-tags",
     name = "disk",
-    icon = "__base__/graphics/icons/processing-unit.png",
+    icon = "__disk__/graphics/disk-512.png",
     flags = {},
     subgroup = "other",
     order = "s[item-with-tags]-o[item-with-tags]",
@@ -20,7 +20,7 @@ data:extend{
     },
     result = "disk",
     result_count = 1,
-    icon = "__base__/graphics/icons/processing-unit.png",
+    icon = "__disk__/graphics/disk-512.png",
   },
   {
     type = "item",
@@ -85,23 +85,23 @@ data:extend{
   {
     type = "virtual-signal",
     name = "signal-diskreader-read",
-    icon = "__base__/graphics/icons/signal/signal_R.png",
+    icon = "__disk__/graphics/disk-read.png",
     subgroup = "virtual-signal-diskreader",
-    order = "z[diskreader]-[R]"
+    order = "z[diskreader]-[1R]"
   },
   {
     type = "virtual-signal",
     name = "signal-diskreader-write",
-    icon = "__base__/graphics/icons/signal/signal_W.png",
+    icon = "__disk__/graphics/disk-write.png",
     subgroup = "virtual-signal-diskreader",
-    order = "z[diskreader]-[W]"
+    order = "z[diskreader]-[2W]"
   },
   {
     type = "virtual-signal",
     name = "signal-diskreader-status",
-    icon = "__base__/graphics/icons/signal/signal_S.png",
+    icon = "__disk__/graphics/disk-status.png",
     subgroup = "virtual-signal-diskreader",
-    order = "z[diskreader]-[S]"
+    order = "z[diskreader]-[3S]"
   },
 
 }
