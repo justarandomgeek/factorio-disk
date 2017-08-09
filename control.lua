@@ -15,8 +15,8 @@ local function onTickManager(manager)
   local ejectedDisk, hasEjectedDisk = manager.ent.get_inventory(defines.inventory.furnace_result)[1], false
   if disk and disk.valid_for_read and disk.name=="disk" then hasDisk = true end
   if ejectedDisk and ejectedDisk.valid_for_read and ejectedDisk.name=="disk" then hasEjectedDisk = true end
-  
-  
+
+
   local state = 0
 
   -- read cc1 signals. Only uses one wire, red if both connected.
@@ -26,40 +26,38 @@ local function onTickManager(manager)
     if readsig ~= 0 then
       if readsig == -1 then
         -- eject disk
-        if not hasDisk then state = -1  -- ERR_NO_DISK
-        elseif hasEjectedDisk then state = -2  -- ERR_MACHINE_BLOCKED
-        else 
+        if not hasDisk then
+          state = -1  -- ERR_NO_DISK
+        elseif hasEjectedDisk then
+          state = -2  -- ERR_MACHINE_BLOCKED
+        else
           manager.ent.get_inventory(defines.inventory.furnace_result)[1].set_stack(disk)
           disk.clear()
           state = 1  -- DISK_OP_OK
         end
-      elseif readsig == -2 then
-        -- erase disk (configurable, perhaps?)
-        if not hasDisk then state = -1  -- ERR_NO_DISK
-        else
-          for i = 1, 512 do
-            disk.set_tag("disk_"..i, nil)
-          end
-          state = 1 -- DISK_OP_OK
-        end
       elseif readsig > 0 and readsig <= 512 then
         -- read a frame to cc2
-        if not hasDisk then state = -1  -- ERR_NO_DISK
+        if not hasDisk then
+          state = -1  -- ERR_NO_DISK
         else
           local diskdata = disk.get_tag("disk_"..readsig)
           if diskdata then
             -- bog up the output combinator port now, mark for clear
+            diskdata[#diskdata+1] = {index=#diskdata+1, count=1, signal={name="signal-diskreader-status",type="virtual"}}
             manager.cc2.get_or_create_control_behavior().parameters={parameters = diskdata}
             manager.clearcc2 = true
+            state = 0 -- state already reported with read data
           end
         end
-      else state = -3  -- ERR_ILLEGAL_READ
+      else
+        state = -3  -- ERR_ILLEGAL_READ
       end
     else
       local writesig = signet1.get_signal({name="signal-diskreader-write",type="virtual"})
       if writesig > 0 and writesig <= 512 then
         -- write data from cc1 with read/write stripped
-        if not hasDisk then state = -1  -- ERR_NO_DISK
+        if not hasDisk then
+          state = -1  -- ERR_NO_DISK
         else
           local storeframe = {}
           for i,signal in pairs(signet1.signals) do
@@ -72,13 +70,25 @@ local function onTickManager(manager)
           else
             disk.set_tag("disk_"..writesig, nil)
           end
+          state = 1  -- DISK_OP_OK
         end
-      elseif writesig ~= 0 then state = -4  --- ERR_ILLEGAL_WRITE
+      elseif writesig == -1 then
+        -- erase disk (configurable, perhaps?)
+        if not hasDisk then
+          state = -1  -- ERR_NO_DISK
+        else
+          for i = 1, 512 do
+            disk.set_tag("disk_"..i, nil)
+          end
+          state = 1 -- DISK_OP_OK
+        end
+      elseif writesig ~= 0 then
+        state = -4  --- ERR_ILLEGAL_WRITE
       end
     end
-  
-    -- if nonblank resultstate and not already waiting for combinator port clear, send state
-    if state ~= 0 and not manager.clearcc2 then
+
+    -- if nonblank resultstate, send state
+    if state ~= 0 then
       manager.cc2.get_or_create_control_behavior().parameters={parameters = {{index=1, count=state, signal={name="signal-diskreader-status",type="virtual"}}}}
       manager.clearcc2 = true
     end
