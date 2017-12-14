@@ -3,10 +3,12 @@ data:extend{
     type = "item-with-tags",
     name = "disk",
     icon = "__disk__/graphics/disk-512.png",
+    icon_size = 32,
     flags = {},
     subgroup = "other",
     order = "s[item-with-tags]-o[item-with-tags]",
-    stack_size = 1
+    stack_size = 1,
+    can_be_mod_opened=true
   },
   {
     type = "recipe",
@@ -21,11 +23,13 @@ data:extend{
     result = "disk",
     result_count = 1,
     icon = "__disk__/graphics/disk-512.png",
+    icon_size = 32,
   },
   {
     type = "item",
     name = "diskreader",
     icon = "__base__/graphics/icons/roboport.png",
+    icon_size = 32,
     flags = {"goes-to-quickbar"},
     subgroup = "logistic-network",
     order = "c[signal]-b[diskreader]",
@@ -45,11 +49,13 @@ data:extend{
     result = "diskreader",
     result_count = 1,
     icon = "__base__/graphics/icons/roboport.png",
+    icon_size = 32,
   },
   {
     type = "item",
     name = "diskreader-control",
     icon = "__base__/graphics/icons/roboport.png",
+    icon_size = 32,
     flags = {"goes-to-quickbar", "hidden"},
     subgroup = "logistic-network",
     order = "c[signal]-b[diskreader-control]",
@@ -74,6 +80,7 @@ data:extend{
     result = "disk",
     result_count = 1,
     icon = "__base__/graphics/icons/processing-unit.png",
+    icon_size = 32,
   },
 
   {
@@ -86,6 +93,7 @@ data:extend{
     type = "virtual-signal",
     name = "signal-diskreader-read",
     icon = "__disk__/graphics/disk-read.png",
+    icon_size = 32,
     subgroup = "virtual-signal-diskreader",
     order = "z[diskreader]-[1R]"
   },
@@ -93,6 +101,7 @@ data:extend{
     type = "virtual-signal",
     name = "signal-diskreader-write",
     icon = "__disk__/graphics/disk-write.png",
+    icon_size = 32,
     subgroup = "virtual-signal-diskreader",
     order = "z[diskreader]-[2W]"
   },
@@ -100,6 +109,7 @@ data:extend{
     type = "virtual-signal",
     name = "signal-diskreader-status",
     icon = "__disk__/graphics/disk-status.png",
+    icon_size = 32,
     subgroup = "virtual-signal-diskreader",
     order = "z[diskreader]-[3S]"
   },

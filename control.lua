@@ -1,8 +1,3 @@
-local json = require "dkjson"
-local inflate = require "deflatelua"
-local deflate = require "zlib-deflate"
-local base64 = require "base64"
-
 local signalblacklist = {["signal-diskreader-read"]=true, ["signal-diskreader-write"]=true, ["signal-diskreader-status"]=true}
 
 local function onTickManager(manager)
@@ -147,38 +142,16 @@ local function onBuilt(event)
   end
 end
 
-local function ExportDisk(disk)
-  local data = {}
-  for i = 1,512 do
-    data[tostring(i)] = disk.get_tag("disk_"..i)
-  end
-  return base64.enc(deflate.gzip(json.encode{label=disk.label, data=data}))
-end
-
-local function ImportDisk(disk,data)
-  local output = {}
-  local ok = pcall(inflate.gunzip, {input = base64.dec(data), output = function(byte) output[#output+1] = string.char(byte) end })
-  if not ok then return false end
-  local decode = json.decode(table.concat(output))
-  if decode then
-    if decode.label then disk.label = decode.label end
-    if decode.data then
-      for i = 1,512 do
-        disk.set_tag("disk_"..i,decode.data[tostring(i)])
-      end
-    end
-    return true
-  else
-    return false
-  end
-end
-
 local function onCursorStackChanged(event)
   local player = game.players[event.player_index]
   if player.cursor_stack.valid_for_read and player.cursor_stack.name == "disk" then
     local frame = player.gui.left.add{type="frame", name="diskgui"}
     local textbox = frame.add{type="textfield", name="disk-string-text"}
-    textbox.text = ExportDisk(player.cursor_stack)
+    if #player.cursor_stack.tags == 0 then
+      textbox.text = "EMPTY DISK"
+    else
+      textbox.text = player.cursor_stack.export_stack()
+    end
   else
     local frame = player.gui.left["diskgui"]
     if frame then
@@ -187,20 +160,10 @@ local function onCursorStackChanged(event)
   end
 end
 
-local function onTextChanged(event)
-  if event.element.name=="disk-string-text" then
-    local player = game.players[event.player_index]
-    if ImportDisk(player.cursor_stack,event.element.text) then
-      player.print("DISK updated!")
-    end
-  end
-end
-
 script.on_event(defines.events.on_tick, onTick)
 script.on_event(defines.events.on_built_entity, onBuilt)
 script.on_event(defines.events.on_robot_built_entity, onBuilt)
 script.on_event(defines.events.on_player_cursor_stack_changed, onCursorStackChanged)
-script.on_event(defines.events.on_gui_text_changed, onTextChanged)
 --on_gui_checked_state_changed
 --on_gui_click
 --on_gui_elem_changed
@@ -209,6 +172,5 @@ script.on_event(defines.events.on_gui_text_changed, onTextChanged)
 
 
 remote.add_interface('disk',{
-  export = ExportDisk,
-  import = ImportDisk,
+
 })
