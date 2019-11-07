@@ -147,7 +147,7 @@ local function onCursorStackChanged(event)
   if player.cursor_stack.valid_for_read and player.cursor_stack.name == "disk" then
     local frame = player.gui.left.add{type="frame", name="diskgui"}
     local textbox = frame.add{type="textfield", name="disk-string-text"}
-    if #player.cursor_stack.tags == 0 then
+    if table_size(player.cursor_stack.tags) == 0 then
       textbox.text = "EMPTY DISK"
     else
       textbox.text = player.cursor_stack.export_stack()
