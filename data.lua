@@ -29,7 +29,7 @@ data:extend{
     type = "item",
     name = "diskreader",
     icon = "__base__/graphics/icons/roboport.png",
-    icon_size = 32,
+    icon_size = 64,
     subgroup = "logistic-network",
     order = "c[signal]-b[diskreader]",
     place_result="diskreader",
@@ -48,13 +48,13 @@ data:extend{
     result = "diskreader",
     result_count = 1,
     icon = "__base__/graphics/icons/roboport.png",
-    icon_size = 32,
+    icon_size = 64,
   },
   {
     type = "item",
     name = "diskreader-control",
     icon = "__base__/graphics/icons/roboport.png",
-    icon_size = 32,
+    icon_size = 64,
     flags = {"hidden"},
     subgroup = "logistic-network",
     order = "c[signal]-b[diskreader-control]",
@@ -79,7 +79,7 @@ data:extend{
     result = "disk",
     result_count = 1,
     icon = "__base__/graphics/icons/processing-unit.png",
-    icon_size = 32,
+    icon_size = 64,
   },
 
   {
