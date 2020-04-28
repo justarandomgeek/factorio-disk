@@ -37,6 +37,19 @@ local function onTickManager(manager)
         else
           local diskdata = disk.get_tag("disk_"..readsig)
           if diskdata then
+            -- validate disk data is all valid
+            for _,data in pairs(diskdata) do
+              local signal = data.signal
+              local stype = signal.type
+              local sname = signal.name
+              if not (
+                (stype == "item" and game.item_prototypes[sname]) or
+                (stype == "fluid" and game.fluid_prototypes[sname]) or
+                (stype == "virtual" and game.virtual_signal_prototypes[sname])
+                ) then
+                data.signal = {type="item"} -- invalid signal still needs a type, "item" == 0
+              end
+            end
             -- bog up the output combinator port now, mark for clear
             diskdata[#diskdata+1] = {index=#diskdata+1, count=1, signal={name="signal-diskreader-status",type="virtual"}}
             manager.cc2.get_or_create_control_behavior().parameters={parameters = diskdata}
