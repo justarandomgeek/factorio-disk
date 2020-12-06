@@ -52,7 +52,7 @@ local function onTickManager(manager)
             end
             -- bog up the output combinator port now, mark for clear
             diskdata[#diskdata+1] = {index=#diskdata+1, count=1, signal={name="signal-diskreader-status",type="virtual"}}
-            manager.cc2.get_or_create_control_behavior().parameters={parameters = diskdata}
+            manager.cc2.get_or_create_control_behavior().parameters = diskdata
             manager.clearcc2 = true
             state = 0 -- state already reported with read data
           end
@@ -97,7 +97,7 @@ local function onTickManager(manager)
 
     -- if nonblank resultstate, send state
     if state ~= 0 then
-      manager.cc2.get_or_create_control_behavior().parameters={parameters = {{index=1, count=state, signal={name="signal-diskreader-status",type="virtual"}}}}
+      manager.cc2.get_or_create_control_behavior().parameters = {{index=1, count=state, signal={name="signal-diskreader-status",type="virtual"}}}
       manager.clearcc2 = true
     end
   end
