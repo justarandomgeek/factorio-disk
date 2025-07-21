@@ -1,29 +1,29 @@
-data:extend{
+local meld = require("meld")
+
+data.extend{
   {
     type = "item-with-tags",
     name = "disk",
     icon = "__disk__/graphics/disk-512.png",
     icon_size = 32,
-    flags = {},
+    flags = { "not-stackable", "spawnable" },
     subgroup = "other",
     order = "s[item-with-tags]-o[item-with-tags]",
     stack_size = 1,
     can_be_mod_opened=true
   },
   {
-    type = "recipe",
-    name = "disk",
-    enabled = true,
-    energy_required = 1,
-    ingredients =
-    {
-      {"processing-unit",1},
-      {"advanced-circuit", 10}
-    },
-    result = "disk",
-    result_count = 1,
+    type = "shortcut",
+    name = "give-disk",
+    order = "b[disk]-g[disk]",
+    action = "spawn-item",
+    --technology_to_unlock = "construction-robotics",
+    item_to_spawn = "disk",
+    style = "default",
     icon = "__disk__/graphics/disk-512.png",
-    icon_size = 32,
+    icon_size = 32, -- 56
+    small_icon = "__disk__/graphics/disk-512.png",
+    small_icon_size = 32 -- 24
   },
   {
     type = "item",
@@ -42,95 +42,85 @@ data:extend{
     energy_required = 1,
     ingredients =
     {
-      {"processing-unit", 2},
-      {"decider-combinator",5}
+      { type="item", name="processing-unit", amount=2 },
+      { type="item", name="decider-combinator", amount=5 }
     },
-    result = "diskreader",
-    result_count = 1,
+    results = {
+      { type="item", name="diskreader", amount=1 }
+    },
     icon = "__base__/graphics/icons/roboport.png",
     icon_size = 64,
   },
-  {
-    type = "item",
-    name = "diskreader-control",
-    icon = "__base__/graphics/icons/roboport.png",
-    icon_size = 64,
-    flags = {"hidden"},
-    subgroup = "logistic-network",
-    order = "c[signal]-b[diskreader-control]",
-    place_result="diskreader-control",
-    stack_size = 50,
-  },
-  {
-    type = "recipe-category",
-    name = "diskreader"
-  },
-  {
-    type = "recipe",
-    name = "diskreader-process",
-    enabled = true,
-    hidden = true,
-    energy_required = 1,
-    category = "diskreader",
-    ingredients =
-    {
-      {"disk", 1}
+  meld.meld(table.deepcopy(data.raw["decider-combinator"]["decider-combinator"]), {
+    name = "diskreader",
+    minable = {
+      result = "diskreader",
     },
-    result = "disk",
-    result_count = 1,
-    icon = "__base__/graphics/icons/processing-unit.png",
-    icon_size = 64,
-  },
-
+    fast_replaceable_group = meld.delete(),
+    created_effect = meld.overwrite{
+      type = "direct",
+      action_delivery = {
+        type = "instant",
+        source_effects = {
+          {
+            type = "script",
+            effect_id = "diskreader-created",
+          },
+        }
+      }
+    },
+    sprites = data.raw["selector-combinator"]["selector-combinator"].sprites,
+    activity_led_sprites = data.raw["selector-combinator"]["selector-combinator"].activity_led_sprites,
+    input_connection_points = data.raw["selector-combinator"]["selector-combinator"].input_connection_points,
+    output_connection_points = data.raw["selector-combinator"]["selector-combinator"].output_connection_points,
+    equal_symbol_sprites = meld.overwrite({
+      north = util.draw_as_glow
+        {
+          scale = 0.5,
+          filename = "__disk__/graphics/combinator-display.png",
+          width = 30,
+          height = 22,
+          shift = util.by_pixel(0, -4.5)
+        },
+      east = util.draw_as_glow
+        {
+          scale = 0.5,
+          filename = "__disk__/graphics/combinator-display.png",
+          width = 30,
+          height = 22,
+          shift = util.by_pixel(0, -10.5)
+        },
+      south = util.draw_as_glow
+        {
+          scale = 0.5,
+          filename = "__disk__/graphics/combinator-display.png",
+          width = 30,
+          height = 22,
+          shift = util.by_pixel(0, -4.5)
+        },
+      west = util.draw_as_glow
+        {
+          scale = 0.5,
+          filename = "__disk__/graphics/combinator-display.png",
+          width = 30,
+          height = 22,
+          shift = util.by_pixel(0, -10.5)
+        }
+    }),
+    greater_symbol_sprites = meld.delete(),
+    less_symbol_sprites = meld.delete(),
+    not_equal_symbol_sprites = meld.delete(),
+    greater_or_equal_symbol_sprites = meld.delete(),
+    less_or_equal_symbol_sprites = meld.delete(),
+  }),
   {
-    type = "item-subgroup",
-    name = "virtual-signal-diskreader",
-    group = "signals",
-    order = "z"
+    type = "container",
+    name = "diskreader-chest",
+    inventory_size = 1,
+    inventory_type = "with_filters_and_bar",
+    flags = {"placeable-off-grid"},
+    selection_box = {{-0.4, -0.4}, {0.4, 0.4}},
+    collision_box = {{-0.5, -0.5}, {0.5, 0.5}}, -- a box for inserters to reach
+    collision_mask = {layers = {}}, -- but no mask so it doesn't really collide
   },
-  {
-    type = "virtual-signal",
-    name = "signal-diskreader-read",
-    icon = "__disk__/graphics/disk-read.png",
-    icon_size = 32,
-    subgroup = "virtual-signal-diskreader",
-    order = "z[diskreader]-[1R]"
-  },
-  {
-    type = "virtual-signal",
-    name = "signal-diskreader-write",
-    icon = "__disk__/graphics/disk-write.png",
-    icon_size = 32,
-    subgroup = "virtual-signal-diskreader",
-    order = "z[diskreader]-[2W]"
-  },
-  {
-    type = "virtual-signal",
-    name = "signal-diskreader-status",
-    icon = "__disk__/graphics/disk-status.png",
-    icon_size = 32,
-    subgroup = "virtual-signal-diskreader",
-    order = "z[diskreader]-[3S]"
-  },
-
 }
-
-
-local diskreaderent = table.deepcopy(data.raw["furnace"]["electric-furnace"])
-diskreaderent.name="diskreader"
-diskreaderent.minable.result = "diskreader"
-diskreaderent.fast_replaceable_group = nil
-diskreaderent.crafting_categories = {"diskreader"}
-diskreaderent.crafting_speed = 1
-diskreaderent.module_specification = nil
-diskreaderent.allowed_effects = nil
-diskreaderent.collision_box = {{-1.2, -1.2}, {1.2, 0.8}} -- collision_box = {{-1.2, -1.2}, {1.2, 1.2}}
-data:extend{diskreaderent}
-
-local diskreaderctrl = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
-diskreaderctrl.name="diskreader-control"
-diskreaderctrl.minable= nil
-diskreaderctrl.order="z[lol]-[diskreaderctrl]"
-diskreaderctrl.item_slot_count = 500
-diskreaderctrl.collision_box = {{-0.4,  0.0}, {0.4, 0.4}}
-data:extend{diskreaderctrl}
