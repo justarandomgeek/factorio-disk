@@ -165,6 +165,24 @@ function reader:on_tick()
         end
       elseif readcmd == -1 then
         -- read disk info
+        -- stack.item_number on [0]high [1]low
+        outputs[#outputs+1] = {
+          signal = {
+            type = "virtual",
+            name = "signal-0",
+          },
+          copy_count_from_input = false,
+          constant = math.floor(stack.item_number/0x100000000),
+        }
+        outputs[#outputs+1] = {
+          signal = {
+            type = "virtual",
+            name = "signal-1",
+          },
+          copy_count_from_input = false,
+          constant = math.fmod(stack.item_number, 0x100000000),
+        }
+        -- stack.get_tag("disk_id") on [info]
       end
     end
 
@@ -175,11 +193,18 @@ function reader:on_tick()
         if data then
           -- write a data frame
           stack.set_tag("disk_data_"..writecmd, data)
+        else
+          stack.remove_tag("disk_data_"..writecmd)
         end
       elseif writecmd == -1 then
         -- write disk info
+        -- disk_id on [info]
       elseif writecmd == -512 then
         -- clear disk
+        local tags = {
+          disk_id = stack.get_tag("disk_id"),
+        }
+        stack.tags = tags
       end
     end
   end
