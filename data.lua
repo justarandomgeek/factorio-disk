@@ -119,6 +119,7 @@ data.extend{
     inventory_size = 1,
     inventory_type = "with_filters_and_bar",
     flags = {"placeable-off-grid"},
+    allow_copy_paste = false,
     selection_box = {{-0.4, -0.4}, {0.4, 0.4}},
     collision_box = {{-0.5, -0.5}, {0.5, 0.5}}, -- a box for inserters to reach
     collision_mask = {layers = {}}, -- but no mask so it doesn't really collide
