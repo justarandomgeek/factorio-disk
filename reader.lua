@@ -122,6 +122,17 @@ function reader:save_entity_settings()
 end
 
 ---@public
+---@param from LuaEntity
+function reader:on_entity_settings_pasted(from)
+  if from.name ~= "diskreader" then
+    self.control.parameters = {
+      conditions = self:save_entity_settings(),
+      outputs = {},
+    }
+  end
+end
+
+---@public
 function reader:on_tick()
   local entity = self.entity
   local control = self.control
@@ -205,8 +216,8 @@ function reader:on_tick()
 
         do
           local count = 0
-          --TODO: for _, tag in pairs(stack.get_tag_names()) do
-          for tag in pairs(stack.tags) do
+          for _, tag in pairs(stack.get_tag_names()) do
+          --for tag in pairs(stack.tags) do
             if string.match(tag, "^disk_data_%d+$") then
               count = count + 1
             end

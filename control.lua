@@ -40,7 +40,10 @@ do
 end
 
 script.on_event(defines.events.on_entity_settings_pasted, function (event)
-  
+  local destination = event.destination
+  if destination.name == "diskreader" then
+    storage.readers[destination.unit_number]:on_entity_settings_pasted(event.source)
+  end
 end)
 
 remote.add_interface('disk',{
