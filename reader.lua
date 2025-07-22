@@ -96,13 +96,16 @@ end
 ---@private
 ---@return DeciderCombinatorCondition[]
 function reader:save_entity_settings()
+  local has_disk = self.stack.valid_for_read
+  ---@type DeciderCombinatorCondition[]
   return {
     -- always on condition to skip processing the rest...
     {
       first_signal_networks=no_wires,
-      comparator="=",
+      comparator=has_disk and "=" or "≠",
       constant=0,
       second_signal_networks=no_wires,
+      compare_type = has_disk and "or" or "and",
     },
     -- and the rest hold config data...
     {
@@ -113,6 +116,7 @@ function reader:save_entity_settings()
         green = false},
       second_signal = self.write_signal,
       second_signal_networks=no_wires,
+      compare_type = "and"
     }
   }
 end
@@ -183,13 +187,47 @@ function reader:on_tick()
           constant = math.fmod(stack.item_number, 0x100000000),
         }
         -- stack.get_tag("disk_id") on [info]
+        do
+          local info = stack.get_tag("disk_id")
+          if type(info) == "number" then
+            outputs[#outputs+1] = {
+              signal = {
+                type = "virtual",
+                name = "signal-info",
+              },
+              copy_count_from_input = false,
+              constant = info,
+            }
+          else
+            stack.remove_tag("disk_id")
+          end
+        end
+
+        do
+          local count = 0
+          --TODO: for _, tag in pairs(stack.get_tag_names()) do
+          for tag in pairs(stack.tags) do
+            if string.match(tag, "^disk_data_%d+$") then
+              count = count + 1
+            end
+          end
+          outputs[#outputs+1] = {
+            signal = {
+              type = "virtual",
+              name = "signal-stack-size",
+            },
+            copy_count_from_input = false,
+            constant = count,
+          }
+        end
       end
     end
 
     local writecmd = entity.get_signal(self.write_signal, wire)
     if writecmd ~= 0 then
+      local data_wire = control_wire[not flip]
       if writecmd >= 1 and writecmd <= 512 then
-        local data = entity.get_signals(control_wire[not flip])
+        local data = entity.get_signals(data_wire)
         if data then
           -- write a data frame
           stack.set_tag("disk_data_"..writecmd, data)
@@ -199,6 +237,15 @@ function reader:on_tick()
       elseif writecmd == -1 then
         -- write disk info
         -- disk_id on [info]
+        local id = entity.get_signal({
+          type="virtual",
+          name="signal-info"
+        }, data_wire)
+        if id ~= 0 then
+          stack.set_tag("disk_id", id)
+        else
+          stack.remove_tag("disk_id")
+        end
       elseif writecmd == -512 then
         -- clear disk
         local tags = {
