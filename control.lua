@@ -46,6 +46,29 @@ script.on_event(defines.events.on_entity_settings_pasted, function (event)
   end
 end)
 
+do
+  ---@param event EventData.CustomInputEvent
+  local function on_fast_entity_transfer(event)
+    local player = game.get_player(event.player_index)
+    ---@cast player -?
+    local selected = player.selected
+    if (not selected) or selected.name~="diskreader" then return end
+    local reader = storage.readers[selected.unit_number]
+    if not reader then return end
+    if player.is_cursor_empty() then
+      reader:take_disk(player)
+    else
+      local cursor = player.cursor_stack
+      if not cursor then return end
+      if cursor.name == "disk" then
+        reader:put_disk(cursor)
+      end
+    end
+  end
+  script.on_event(prototypes.custom_input["disk-fast-entity-transfer"], on_fast_entity_transfer)
+  script.on_event(prototypes.custom_input["disk-fast-entity-split"], on_fast_entity_transfer)
+end
+
 remote.add_interface('disk',{
 
 })

@@ -271,11 +271,18 @@ function reader:on_tick()
 end
 
 ---@public
----@param inv LuaInventory
-function reader:take_disk(inv)
-  if inv.insert(self.stack) == 1 then
+---@param target LuaInventory|LuaPlayer
+function reader:take_disk(target)
+  if target.insert(self.stack) == 1 then
     self.stack.clear() -- delete it if it got taken
   end
+end
+
+---@public
+---@param stack LuaItemStack
+---@return boolean `true` if the disk was transferred
+function reader:put_disk(stack)
+  return self.stack.transfer_stack(stack)
 end
 
 ---@public
