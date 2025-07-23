@@ -2,7 +2,7 @@ local new_reader = require("reader")
 
 script.on_init(function ()
   ---@class (exact) DiskStorage
-  ---@field readers {[integer]:DiskReader}
+  ---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
   storage = {
     readers = {},
   }
