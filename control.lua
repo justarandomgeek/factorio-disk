@@ -59,7 +59,7 @@ do
       reader:take_disk(player)
     else
       local cursor = player.cursor_stack
-      if not cursor then return end
+      if not (cursor and cursor.valid_for_read) then return end
       if cursor.name == "disk" then
         reader:put_disk(cursor)
       end
