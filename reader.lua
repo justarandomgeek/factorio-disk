@@ -5,9 +5,15 @@
 ---@field private control LuaDeciderCombinatorControlBehavior
 ---@field private chest LuaEntity
 ---@field private stack LuaItemStack
+---@
 ---@field private write_signal SignalID
 ---@field private read_signal SignalID
 ---@field private flip_wires? boolean # true = data red/control green, false = data green/control red
+---@
+---@field private itemid_high_signal SignalID
+---@field private itemid_low_signal SignalID
+---@field private userid_signal SignalID
+---@field private pagecount_signal SignalID
 local reader={}
 
 ---@type metatable
@@ -52,17 +58,39 @@ local control_wire = {
   [false] = defines.wire_connector_id.combinator_input_red,
 }
 
----@type SignalID
-local default_read_signal = {
-  type = "virtual",
-  name = "signal-output",
-  quality = "normal",
-}
+---@type {[string]:SignalID}
+local default_signal = {
+  read = {
+    type = "virtual",
+    name = "signal-output",
+    quality = "normal",
+  },
+  write = {
+    type = "virtual",
+    name = "signal-input",
+    quality = "normal",
+  },
 
-local default_write_signal = {
-  type = "virtual",
-  name = "signal-input",
-  quality = "normal",
+  itemid_high = {
+    type = "virtual",
+    name = "signal-0",
+    quality = "normal",
+  },
+  itemid_low = {
+    type = "virtual",
+    name = "signal-1",
+    quality = "normal",
+  },
+  userid = {
+    type = "virtual",
+    name = "signal-info",
+    quality = "normal",
+  },
+  pagecount = {
+    type = "virtual",
+    name = "signal-stack-size",
+    quality = "normal",
+  },
 }
 
 ---@type {[SignalIDType]:LuaCustomTable<string>}
@@ -84,10 +112,22 @@ local no_wires = {red=false, green=false}
 function reader:load_entity_settings()
   local param = self.control.parameters
   local conditions = param.conditions
-  if #conditions == 2 then
+  if #conditions == 4 then
     self.flip_wires = conditions[2].first_signal_networks.red
-    self.read_signal = conditions[2].first_signal or default_read_signal
-    self.write_signal = conditions[2].second_signal or default_write_signal
+    self.read_signal = conditions[2].first_signal or default_signal.read
+    self.write_signal = conditions[2].second_signal or default_signal.write
+    self.itemid_high_signal = conditions[3].first_signal or default_signal.itemid_high
+    self.itemid_low_signal = conditions[3].second_signal or default_signal.itemid_low
+    self.userid_signal = conditions[4].first_signal or default_signal.userid
+    self.pagecount_signal = conditions[4].second_signal or default_signal.pagecount
+  elseif #conditions == 2 then -- old config
+    self.flip_wires = conditions[2].first_signal_networks.red
+    self.read_signal = conditions[2].first_signal or default_signal.read
+    self.write_signal = conditions[2].second_signal or default_signal.write
+    self.itemid_high_signal = default_signal.itemid_high
+    self.itemid_low_signal = default_signal.itemid_low
+    self.userid_signal = default_signal.userid
+    self.pagecount_signal = default_signal.pagecount
   end
   param.conditions = self:save_entity_settings()
   return param
@@ -117,8 +157,23 @@ function reader:save_entity_settings()
       second_signal = self.write_signal,
       second_signal_networks=no_wires,
       compare_type = has_disk and "or" or "and", -- how the config group combines with the first condition
-      --compare_type = "and" -- any future config rows should be plain ands...
-    }
+    },
+    {
+      comparator="=",
+      first_signal = self.itemid_high_signal,
+      first_signal_networks=no_wires,
+      second_signal = self.itemid_low_signal,
+      second_signal_networks=no_wires,
+      compare_type = "and" -- any future config rows should be plain ands to make one big config group...
+    },
+    {
+      comparator="=",
+      first_signal = self.userid_signal,
+      first_signal_networks=no_wires,
+      second_signal = self.pagecount_signal,
+      second_signal_networks=no_wires,
+      compare_type = "and"
+    },
   }
 end
 
@@ -183,18 +238,12 @@ function reader:on_tick()
         -- read disk info
         -- stack.item_number on [0]high [1]low
         outputs[#outputs+1] = {
-          signal = {
-            type = "virtual",
-            name = "signal-0",
-          },
+          signal = self.itemid_high_signal,
           copy_count_from_input = false,
           constant = math.floor(stack.item_number/0x100000000),
         }
         outputs[#outputs+1] = {
-          signal = {
-            type = "virtual",
-            name = "signal-1",
-          },
+          signal = self.itemid_low_signal,
           copy_count_from_input = false,
           constant = math.fmod(stack.item_number, 0x100000000),
         }
@@ -203,10 +252,7 @@ function reader:on_tick()
           local info = stack.get_tag("disk_id")
           if type(info) == "number" then
             outputs[#outputs+1] = {
-              signal = {
-                type = "virtual",
-                name = "signal-info",
-              },
+              signal = self.userid_signal,
               copy_count_from_input = false,
               constant = info,
             }
@@ -224,10 +270,7 @@ function reader:on_tick()
             end
           end
           outputs[#outputs+1] = {
-            signal = {
-              type = "virtual",
-              name = "signal-stack-size",
-            },
+            signal = self.pagecount_signal,
             copy_count_from_input = false,
             constant = count,
           }
@@ -249,10 +292,7 @@ function reader:on_tick()
       elseif writecmd == -1 then
         -- write disk info
         -- disk_id on [info]
-        local id = entity.get_signal({
-          type="virtual",
-          name="signal-info"
-        }, data_wire)
+        local id = entity.get_signal(self.userid_signal, data_wire)
         if id ~= 0 then
           stack.set_tag("disk_id", id)
         else
