@@ -105,7 +105,7 @@ function reader:save_entity_settings()
       comparator=has_disk and "=" or "≠",
       constant=0,
       second_signal_networks=no_wires,
-      compare_type = has_disk and "or" or "and",
+      -- first compare_type does nothing...
     },
     -- and the rest hold config data...
     {
@@ -116,7 +116,8 @@ function reader:save_entity_settings()
         green = false},
       second_signal = self.write_signal,
       second_signal_networks=no_wires,
-      compare_type = "and"
+      compare_type = has_disk and "or" or "and", -- how the config group combines with the first condition
+      --compare_type = "and" -- any future config rows should be plain ands...
     }
   }
 end
