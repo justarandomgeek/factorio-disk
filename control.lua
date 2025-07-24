@@ -47,12 +47,19 @@ script.on_event(defines.events.on_entity_settings_pasted, function (event)
 end)
 
 do
+  local allow_controller_types = {
+    [defines.controllers.character] = true,
+    [defines.controllers.editor] = true,
+    [defines.controllers.god] = true,
+  }
+
   ---@param event EventData.CustomInputEvent
   local function on_fast_entity_transfer(event)
     local player = game.get_player(event.player_index)
     ---@cast player -?
+    if not allow_controller_types[player.controller_type] then return end
     local selected = player.selected
-    if (not selected) or selected.name~="diskreader" then return end
+    if not (selected and selected.name=="diskreader" and player.can_reach_entity(selected)) then return end
     local reader = storage.readers[selected.unit_number]
     if not reader then return end
     if player.is_cursor_empty() then
