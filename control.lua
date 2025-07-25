@@ -1,10 +1,15 @@
 local new_reader = require("reader")
+require("gui")
 
 script.on_init(function ()
   ---@class (exact) DiskStorage
   ---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
+  ---@field refs table<string, LuaGuiElement>
+  ---@field opened_reader_entities LuaEntity[]
   storage = {
     readers = {},
+    refs = {},
+    opened_reader_entities = {}
   }
 end)
 
