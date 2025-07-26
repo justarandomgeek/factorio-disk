@@ -13,6 +13,14 @@ script.on_init(function ()
   }
 end)
 
+script.on_configuration_changed(function (change)
+  storage = {
+    readers = storage.readers or {},
+    refs = storage.refs or {},
+    opened_readers = storage.opened_readers or {}
+  }
+end)
+
 script.on_event(defines.events.on_tick, function()
   for unit_number, reader in pairs(storage.readers) do
     if reader:valid() then
