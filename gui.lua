@@ -1,5 +1,7 @@
 local glib = require("__glib__.glib")
 
+local gui = {}
+
 ---@type table<defines.entity_status, LocalisedString>
 local status_names = {}
 for k, v in pairs(defines.entity_status) do
@@ -71,7 +73,8 @@ local function update_gui(player)
     refs.status_label.caption = status_names[entity.status]
 end
 
-script.on_event(defines.events.on_gui_opened, function (event)
+---@param event EventData.on_gui_opened
+function gui.on_gui_opened(event)
     local entity = event.entity
     if not entity or not entity.valid or entity.name ~= "diskreader" then return end
     local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
@@ -253,7 +256,7 @@ script.on_event(defines.events.on_gui_opened, function (event)
     storage.opened_reader_entities[event.player_index] = entity
     player.opened = refs.diskreader_window
     update_gui(player)
-end)
+end
 
 function handlers.close_window(event)
     if storage.do_not_close_gui then return end
@@ -347,10 +350,12 @@ function handlers.close_description_window(event)
     player.opened = player.gui.screen.diskreader_window
 end
 
-script.on_nth_tick(1, function ()
+function gui.on_tick()
     for _, player in pairs(game.connected_players) do
         update_gui(player)
     end
-end)
+end
 
 glib.register_handlers(handlers)
+
+return gui

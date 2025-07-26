@@ -1,5 +1,5 @@
 local new_reader = require("reader")
-require("gui")
+local gui = require("gui")
 
 script.on_init(function ()
   ---@class (exact) DiskStorage
@@ -22,7 +22,10 @@ script.on_event(defines.events.on_tick, function()
       storage.readers[unit_number] = nil
     end
   end
+  gui.on_tick()
 end)
+
+script.on_event(defines.events.on_gui_opened, gui.on_gui_opened)
 
 script.on_event(defines.events.on_script_trigger_effect, function (event)
   if event.effect_id == "diskreader-created" then
