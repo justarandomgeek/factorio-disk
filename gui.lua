@@ -200,7 +200,7 @@ function gui.on_gui_opened(event)
                                 args = {type = "label", caption = {"gui-network-selector.red-label"}},
                             },
                             {
-                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.data"}},
+                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.command"}},
                             },
                         },
                         {
@@ -210,7 +210,7 @@ function gui.on_gui_opened(event)
                                 args = {type = "label", caption = {"gui-network-selector.green-label"}},
                             },
                             {
-                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.command"}},
+                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.data"}},
                             },
                         }
                     },
@@ -227,7 +227,7 @@ function gui.on_gui_opened(event)
                                 args = {type = "label", caption = {"gui-network-selector.red-label"}},
                             },
                             {
-                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.command"}},
+                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.data"}},
                             },
                         },
                         {
@@ -237,7 +237,7 @@ function gui.on_gui_opened(event)
                                 args = {type = "label", caption = {"gui-network-selector.green-label"}},
                             },
                             {
-                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.data"}},
+                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.command"}},
                             },
                         }
                     },
