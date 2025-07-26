@@ -192,6 +192,10 @@ function gui.on_gui_opened(event)
                 signal_flow("userid_signal"),
                 signal_flow("pagecount_signal"),
                 {
+                    args = {type = "line"},
+                    style_mods = {horizontally_stretchable = true},
+                },
+                {
                     args = {type = "flow", direction = "horizontal"},
                     style_mods = {vertical_align = "center"},
                     {
@@ -227,20 +231,20 @@ function gui.on_gui_opened(event)
                             args = {type = "flow", direction = "horizontal"},
                             style_mods = {vertical_align = "center"},
                             {
-                                args = {type = "label", caption = {"gui-network-selector.red-label"}},
+                                args = {type = "label", caption = {"gui-network-selector.green-label"}},
                             },
                             {
-                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.data"}},
+                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.command"}},
                             },
                         },
                         {
                             args = {type = "flow", direction = "horizontal"},
                             style_mods = {vertical_align = "center"},
                             {
-                                args = {type = "label", caption = {"gui-network-selector.green-label"}},
+                                args = {type = "label", caption = {"gui-network-selector.red-label"}},
                             },
                             {
-                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.command"}},
+                                args = {type = "label", style = "semibold_label", caption = {"diskreader-gui.data"}},
                             },
                         }
                     },
