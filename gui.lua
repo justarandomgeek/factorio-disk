@@ -290,9 +290,11 @@ end
 ---@param event EventData.on_gui_click
 function handlers.slot_clicked(event)
     local player = game.get_player(event.player_index)
+    ---@cast player -?
     local reader = storage.opened_readers[event.player_index]
     local cursor_stack = player.cursor_stack
-    if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name ~= "disk" then
+    if not cursor_stack then return end
+    if cursor_stack.valid_for_read and cursor_stack.name ~= "disk" then
         player.create_local_flying_text{
             text = {"diskreader-gui.cant-be-used-as-data-storage", player.cursor_stack.prototype.localised_name},
             create_at_cursor = true,
@@ -315,6 +317,7 @@ end
 ---@param event EventData.on_gui_click
 function handlers.edit_description(event)
     local player = game.get_player(event.player_index)
+    ---@cast player -?
     local refs = storage.refs[event.player_index]
     glib.add(player.gui.screen, {
         args = {type = "frame", name = "description_window", style = "inset_frame_container_frame", direction = "vertical"},
