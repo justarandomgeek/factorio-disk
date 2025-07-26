@@ -186,6 +186,14 @@ function reader:save_entity_settings()
 end
 
 ---@public
+function reader:on_gui_changed_settings()
+  self.control.parameters = {
+    conditions = self:save_entity_settings(),
+    outputs = {},
+  }
+end
+
+---@public
 ---@param from LuaEntity
 function reader:on_entity_settings_pasted(from)
   if from.name ~= "diskreader" then

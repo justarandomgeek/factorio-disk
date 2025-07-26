@@ -18,19 +18,19 @@ local function update_gui(player)
     if not reader then return end
     local refs = storage.refs[player.index]
     local control = reader.control
-    local condition = control.get_condition(2)
-    
+
     local chest_stack = reader.stack
     if chest_stack and chest_stack.valid_for_read then
         refs.slot.sprite = "item."..chest_stack.name
     else
         refs.slot.sprite = nil
     end
-    
-    refs.read_signal.elem_value = condition.first_signal
-    refs.write_signal.elem_value = condition.second_signal
-    
-    refs.flip_wires_switch.switch_state = condition.first_signal_networks.red and "right" or "left"
+
+    -- fields in reader are already fresh because they ticked first before the gui update
+    refs.read_signal.elem_value = reader.read_signal
+    refs.write_signal.elem_value = reader.write_signal
+
+    refs.flip_wires_switch.switch_state = reader.flip_wires and "right" or "left"
 
     do
         local cf = refs.connections_frame
@@ -270,10 +270,8 @@ function handlers.read_signal_changed(event)
     local reader = storage.opened_readers[event.player_index]
     if not reader then return end
     local refs = storage.refs[event.player_index]
-    local control = reader.control
-    local condition = control.get_condition(2)
-    condition.first_signal = event.element.elem_value --[[@as SignalID]]
-    control.set_condition(2, condition)
+    reader.read_signal = event.element.elem_value --[[@as SignalID]]
+    reader:on_gui_changed_settings()
 end
 
 ---@param event EventData.on_gui_elem_changed
@@ -281,10 +279,8 @@ function handlers.write_signal_changed(event)
     local reader = storage.opened_readers[event.player_index]
     if not reader then return end
     local refs = storage.refs[event.player_index]
-    local control = reader.control
-    local condition = control.get_condition(2)
-    condition.second_signal = event.element.elem_value --[[@as SignalID]]
-    control.set_condition(2, condition)
+    reader.write_signal = event.element.elem_value --[[@as SignalID]]
+    reader:on_gui_changed_settings()
 end
 
 ---@param event EventData.on_gui_click
@@ -308,10 +304,9 @@ end
 ---@param event EventData.on_gui_switch_state_changed
 function handlers.flip_wires_switched(event)
     local reader = storage.opened_readers[event.player_index]
-    local control = reader.control
-    local condition = control.get_condition(2)
-    condition.first_signal_networks.red = not condition.first_signal_networks.red
-    control.set_condition(2, condition)
+    if not reader then return end
+    reader.flip_wires = not reader.flip_wires
+    reader:on_gui_changed_settings()
 end
 
 ---@param event EventData.on_gui_click
