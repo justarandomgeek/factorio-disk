@@ -6,14 +6,14 @@
 ---@field private chest LuaEntity
 ---@field public stack LuaItemStack
 ---@
----@field private write_signal SignalID
----@field private read_signal SignalID
----@field private flip_wires? boolean # true = data red/control green, false = data green/control red
+---@field public write_signal? SignalID
+---@field public read_signal? SignalID
+---@field public flip_wires? boolean # true = data red/control green, false = data green/control red
 ---@
----@field private itemid_high_signal SignalID
----@field private itemid_low_signal SignalID
----@field private userid_signal SignalID
----@field private pagecount_signal SignalID
+---@field public itemid_high_signal? SignalID
+---@field public itemid_low_signal? SignalID
+---@field public userid_signal? SignalID
+---@field public pagecount_signal? SignalID
 local reader={}
 
 ---@type metatable
@@ -114,16 +114,24 @@ function reader:load_entity_settings()
   local conditions = param.conditions
   if #conditions == 4 then
     self.flip_wires = conditions[2].first_signal_networks.red
-    self.read_signal = conditions[2].first_signal or default_signal.read
-    self.write_signal = conditions[2].second_signal or default_signal.write
-    self.itemid_high_signal = conditions[3].first_signal or default_signal.itemid_high
-    self.itemid_low_signal = conditions[3].second_signal or default_signal.itemid_low
-    self.userid_signal = conditions[4].first_signal or default_signal.userid
-    self.pagecount_signal = conditions[4].second_signal or default_signal.pagecount
+    self.read_signal = conditions[2].first_signal
+    self.write_signal = conditions[2].second_signal
+    self.itemid_high_signal = conditions[3].first_signal
+    self.itemid_low_signal = conditions[3].second_signal
+    self.userid_signal = conditions[4].first_signal
+    self.pagecount_signal = conditions[4].second_signal
   elseif #conditions == 2 then -- old config
     self.flip_wires = conditions[2].first_signal_networks.red
-    self.read_signal = conditions[2].first_signal or default_signal.read
-    self.write_signal = conditions[2].second_signal or default_signal.write
+    self.read_signal = conditions[2].first_signal
+    self.write_signal = conditions[2].second_signal
+    self.itemid_high_signal = default_signal.itemid_high
+    self.itemid_low_signal = default_signal.itemid_low
+    self.userid_signal = default_signal.userid
+    self.pagecount_signal = default_signal.pagecount
+  else -- no config
+    self.flip_wires = nil
+    self.read_signal = default_signal.read
+    self.write_signal = default_signal.write
     self.itemid_high_signal = default_signal.itemid_high
     self.itemid_low_signal = default_signal.itemid_low
     self.userid_signal = default_signal.userid
@@ -203,107 +211,118 @@ function reader:on_tick()
   if stack.valid_for_read then
     local flip = not not self.flip_wires
     local wire = control_wire[flip]
-    local readcmd = entity.get_signal(self.read_signal, wire)
-    if readcmd ~= 0 then
-      if readcmd >= 1 and readcmd <= 512 then
-        -- read a data frame
-        local diskdata = stack.get_tag("disk_data_"..readcmd)
-        if type(diskdata) == "table" then
-          ---@cast diskdata Signal[]
-          -- validate disk data is all valid
-          local i = 1
-          for _,data in pairs(diskdata) do
-            local signal = data.signal
-            local stype = signal.type or "item"
-            local info = typeinfos[stype]
-            local sname = signal.name
-            local sig_valid = info and info[sname]
-            local qname = signal.quality or "normal"
-            local qual_valid = typeinfos.quality[qname]
-            if sig_valid and qual_valid then
-              outputs[i] = {
-                signal = {
-                  type = stype,
-                  name = sname,
-                  quality = qname,
-                },
-                copy_count_from_input = false,
-                constant = data.count,
-              }
-              i = i+1
+    if self.read_signal then
+      local readcmd = entity.get_signal(self.read_signal, wire)
+      if readcmd ~= 0 then
+        if readcmd >= 1 and readcmd <= 512 then
+          -- read a data frame
+          local diskdata = stack.get_tag("disk_data_"..readcmd)
+          if type(diskdata) == "table" then
+            ---@cast diskdata Signal[]
+            -- validate disk data is all valid
+            local i = 1
+            for _,data in pairs(diskdata) do
+              local signal = data.signal
+              local stype = signal.type or "item"
+              local info = typeinfos[stype]
+              local sname = signal.name
+              local sig_valid = info and info[sname]
+              local qname = signal.quality or "normal"
+              local qual_valid = typeinfos.quality[qname]
+              if sig_valid and qual_valid then
+                outputs[i] = {
+                  signal = {
+                    type = stype,
+                    name = sname,
+                    quality = qname,
+                  },
+                  copy_count_from_input = false,
+                  constant = data.count,
+                }
+                i = i+1
+              end
             end
           end
-        end
-      elseif readcmd == -1 then
-        -- read disk info
-        -- stack.item_number on [0]high [1]low
-        outputs[#outputs+1] = {
-          signal = self.itemid_high_signal,
-          copy_count_from_input = false,
-          constant = math.floor(stack.item_number/0x100000000),
-        }
-        outputs[#outputs+1] = {
-          signal = self.itemid_low_signal,
-          copy_count_from_input = false,
-          constant = math.fmod(stack.item_number, 0x100000000),
-        }
-        -- stack.get_tag("disk_id") on [info]
-        do
-          local info = stack.get_tag("disk_id")
-          if type(info) == "number" then
+        elseif readcmd == -1 then
+          -- read disk info
+          -- stack.item_number on [0]high [1]low
+          if self.itemid_high_signal then
             outputs[#outputs+1] = {
-              signal = self.userid_signal,
+              signal = self.itemid_high_signal,
               copy_count_from_input = false,
-              constant = info,
+              constant = math.floor(stack.item_number/0x100000000),
             }
-          else
-            stack.remove_tag("disk_id")
           end
-        end
-
-        do
-          local count = 0
-          --for _, tag in pairs(stack.get_tag_names()) do
-          for tag in pairs(stack.tags) do
-            if string.match(tag, "^disk_data_%d+$") then
-              count = count + 1
+          if self.itemid_low_signal then
+            outputs[#outputs+1] = {
+              signal = self.itemid_low_signal,
+              copy_count_from_input = false,
+              constant = math.fmod(stack.item_number, 0x100000000),
+            }
+          end
+          -- stack.get_tag("disk_id") on [info]
+          if self.userid_signal then
+            local info = stack.get_tag("disk_id")
+            if type(info) == "number" then
+              outputs[#outputs+1] = {
+                signal = self.userid_signal,
+                copy_count_from_input = false,
+                constant = info,
+              }
+            else
+              stack.remove_tag("disk_id")
             end
           end
-          outputs[#outputs+1] = {
-            signal = self.pagecount_signal,
-            copy_count_from_input = false,
-            constant = count,
-          }
+
+          if self.pagecount_signal then
+            local count = 0
+            --for _, tag in pairs(stack.get_tag_names()) do
+            for tag in pairs(stack.tags) do
+              if string.match(tag, "^disk_data_%d+$") then
+                count = count + 1
+              end
+            end
+            outputs[#outputs+1] = {
+              signal = self.pagecount_signal,
+              copy_count_from_input = false,
+              constant = count,
+            }
+          end
         end
       end
     end
 
-    local writecmd = entity.get_signal(self.write_signal, wire)
-    if writecmd ~= 0 then
-      local data_wire = control_wire[not flip]
-      if writecmd >= 1 and writecmd <= 512 then
-        local data = entity.get_signals(data_wire)
-        if data then
-          -- write a data frame
-          stack.set_tag("disk_data_"..writecmd, data)
-        else
-          stack.remove_tag("disk_data_"..writecmd)
+    if self.write_signal then
+      local writecmd = entity.get_signal(self.write_signal, wire)
+      if writecmd ~= 0 then
+        local data_wire = control_wire[not flip]
+        if writecmd >= 1 and writecmd <= 512 then
+          local data = entity.get_signals(data_wire)
+          if data then
+            -- write a data frame
+            stack.set_tag("disk_data_"..writecmd, data)
+          else
+            stack.remove_tag("disk_data_"..writecmd)
+          end
+        elseif writecmd == -1 then
+          -- write disk info
+          -- disk_id on [info]
+          local id = 0
+          if self.userid_signal then
+            id = entity.get_signal(self.userid_signal, data_wire)
+          end
+          if id ~= 0 then
+            stack.set_tag("disk_id", id)
+          else
+            stack.remove_tag("disk_id")
+          end
+        elseif writecmd == -512 then
+          -- clear disk
+          local tags = {
+            disk_id = stack.get_tag("disk_id"),
+          }
+          stack.tags = tags
         end
-      elseif writecmd == -1 then
-        -- write disk info
-        -- disk_id on [info]
-        local id = entity.get_signal(self.userid_signal, data_wire)
-        if id ~= 0 then
-          stack.set_tag("disk_id", id)
-        else
-          stack.remove_tag("disk_id")
-        end
-      elseif writecmd == -512 then
-        -- clear disk
-        local tags = {
-          disk_id = stack.get_tag("disk_id"),
-        }
-        stack.tags = tags
       end
     end
   end
