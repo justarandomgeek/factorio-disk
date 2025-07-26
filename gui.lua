@@ -14,14 +14,13 @@ local handlers = {}
 
 ---@param player LuaPlayer
 local function update_gui(player)
-    local entity = storage.opened_reader_entities[player.index]
-    if not entity then return end
-    local reader = storage.readers[entity.unit_number]
+    local reader = storage.opened_readers[player.index]
+    if not reader then return end
     local refs = storage.refs[player.index]
-    local control = entity.get_or_create_control_behavior() --[[@as LuaDeciderCombinatorControlBehavior]]
+    local control = reader.control
     local condition = control.get_condition(2)
     
-    local chest_stack = reader.chest.get_inventory(defines.inventory.chest)[1]
+    local chest_stack = reader.stack
     if chest_stack and chest_stack.valid_for_read then
         refs.slot.sprite = "item."..chest_stack.name
     else
@@ -70,13 +69,14 @@ local function update_gui(player)
         end
     end
 
-    refs.status_label.caption = status_names[entity.status]
+    refs.status_label.caption = status_names[reader.entity.status]
 end
 
 ---@param event EventData.on_gui_opened
 function gui.on_gui_opened(event)
     local entity = event.entity
     if not entity or not entity.valid or entity.name ~= "diskreader" then return end
+    local reader = storage.readers[entity.unit_number]
     local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
     local refs = storage.refs[event.player_index]
     if not refs then
@@ -253,7 +253,7 @@ function gui.on_gui_opened(event)
             }
         }
     }, refs)
-    storage.opened_reader_entities[event.player_index] = entity
+    storage.opened_readers[event.player_index] = reader
     player.opened = refs.diskreader_window
     update_gui(player)
 end
@@ -262,15 +262,15 @@ function handlers.close_window(event)
     if storage.do_not_close_gui then return end
     local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
     player.gui.screen.diskreader_window.destroy()
-    storage.opened_reader_entities[event.player_index] = nil
+    storage.opened_readers[event.player_index] = nil
 end
 
 ---@param event EventData.on_gui_elem_changed
 function handlers.read_signal_changed(event)
-    local entity = storage.opened_reader_entities[event.player_index]
-    if not entity then return end
+    local reader = storage.opened_readers[event.player_index]
+    if not reader then return end
     local refs = storage.refs[event.player_index]
-    local control = entity.get_or_create_control_behavior() --[[@as LuaDeciderCombinatorControlBehavior]]
+    local control = reader.control
     local condition = control.get_condition(2)
     condition.first_signal = event.element.elem_value --[[@as SignalID]]
     control.set_condition(2, condition)
@@ -278,10 +278,10 @@ end
 
 ---@param event EventData.on_gui_elem_changed
 function handlers.write_signal_changed(event)
-    local entity = storage.opened_reader_entities[event.player_index]
-    if not entity then return end
+    local reader = storage.opened_readers[event.player_index]
+    if not reader then return end
     local refs = storage.refs[event.player_index]
-    local control = entity.get_or_create_control_behavior() --[[@as LuaDeciderCombinatorControlBehavior]]
+    local control = reader.control
     local condition = control.get_condition(2)
     condition.second_signal = event.element.elem_value --[[@as SignalID]]
     control.set_condition(2, condition)
@@ -290,7 +290,7 @@ end
 ---@param event EventData.on_gui_click
 function handlers.slot_clicked(event)
     local player = game.get_player(event.player_index)
-    local reader = storage.readers[storage.opened_reader_entities[event.player_index].unit_number]
+    local reader = storage.opened_readers[event.player_index]
     local cursor_stack = player.cursor_stack
     if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name ~= "disk" then
         player.create_local_flying_text{
@@ -298,15 +298,15 @@ function handlers.slot_clicked(event)
             create_at_cursor = true,
         }
     else
-        local chest_stack = reader.chest.get_inventory(defines.inventory.chest)[1]
+        local chest_stack = reader.stack
         cursor_stack.swap_stack(chest_stack)
     end
 end
 
 ---@param event EventData.on_gui_switch_state_changed
 function handlers.flip_wires_switched(event)
-    local entity = storage.opened_reader_entities[event.player_index]
-    local control = entity.get_or_create_control_behavior() --[[@as LuaDeciderCombinatorControlBehavior]]
+    local reader = storage.opened_readers[event.player_index]
+    local control = reader.control
     local condition = control.get_condition(2)
     condition.first_signal_networks.red = not condition.first_signal_networks.red
     control.set_condition(2, condition)

@@ -1,10 +1,10 @@
 
 ---@class (exact) DiskReader
----@field private entity LuaEntity
+---@field public entity LuaEntity
 ---@field private unit_number integer
----@field private control LuaDeciderCombinatorControlBehavior
+---@field public control LuaDeciderCombinatorControlBehavior
 ---@field private chest LuaEntity
----@field private stack LuaItemStack
+---@field public stack LuaItemStack
 ---@
 ---@field private write_signal SignalID
 ---@field private read_signal SignalID

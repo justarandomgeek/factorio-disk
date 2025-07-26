@@ -5,11 +5,11 @@ script.on_init(function ()
   ---@class (exact) DiskStorage
   ---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
   ---@field refs table<string, LuaGuiElement>
-  ---@field opened_reader_entities LuaEntity[]
+  ---@field opened_readers {[integer?]:DiskReader} # player_index
   storage = {
     readers = {},
     refs = {},
-    opened_reader_entities = {}
+    opened_readers = {}
   }
 end)
 
