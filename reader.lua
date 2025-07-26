@@ -263,8 +263,8 @@ function reader:on_tick()
 
         do
           local count = 0
-          for _, tag in pairs(stack.get_tag_names()) do
-          --for tag in pairs(stack.tags) do
+          --for _, tag in pairs(stack.get_tag_names()) do
+          for tag in pairs(stack.tags) do
             if string.match(tag, "^disk_data_%d+$") then
               count = count + 1
             end
