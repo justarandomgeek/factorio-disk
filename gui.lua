@@ -29,6 +29,10 @@ local function update_gui(player)
     -- fields in reader are already fresh because they ticked first before the gui update
     refs.read_signal.elem_value = reader.read_signal
     refs.write_signal.elem_value = reader.write_signal
+    refs.itemid_high_signal.elem_value = reader.itemid_high_signal
+    refs.itemid_low_signal.elem_value = reader.itemid_low_signal
+    refs.userid_signal.elem_value = reader.userid_signal
+    refs.pagecount_signal.elem_value = reader.pagecount_signal
 
     refs.flip_wires_switch.switch_state = reader.flip_wires and "right" or "left"
 
@@ -179,6 +183,14 @@ function gui.on_gui_opened(event)
                 },
                 signal_flow("read_signal"),
                 signal_flow("write_signal"),
+                {
+                    args = {type = "line"},
+                    style_mods = {horizontally_stretchable = true},
+                },
+                signal_flow("itemid_high_signal"),
+                signal_flow("itemid_low_signal"),
+                signal_flow("userid_signal"),
+                signal_flow("pagecount_signal"),
                 {
                     args = {type = "flow", direction = "horizontal"},
                     style_mods = {vertical_align = "center"},
