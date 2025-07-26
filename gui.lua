@@ -265,22 +265,15 @@ function handlers.close_window(event)
     storage.opened_readers[event.player_index] = nil
 end
 
----@param event EventData.on_gui_elem_changed
-function handlers.read_signal_changed(event)
-    local reader = storage.opened_readers[event.player_index]
-    if not reader then return end
-    local refs = storage.refs[event.player_index]
-    reader.read_signal = event.element.elem_value --[[@as SignalID]]
-    reader:on_gui_changed_settings()
-end
-
----@param event EventData.on_gui_elem_changed
-function handlers.write_signal_changed(event)
-    local reader = storage.opened_readers[event.player_index]
-    if not reader then return end
-    local refs = storage.refs[event.player_index]
-    reader.write_signal = event.element.elem_value --[[@as SignalID]]
-    reader:on_gui_changed_settings()
+for _, name in pairs({"read_signal", "write_signal", "itemid_high_signal", "itemid_low_signal", "userid_signal", "pagecount_signal"}) do
+    ---@param event EventData.on_gui_elem_changed
+    handlers[name.."_changed"] = function(event)
+        local reader = storage.opened_readers[event.player_index]
+        if not reader then return end
+        local refs = storage.refs[event.player_index]
+        reader[name] = event.element.elem_value --[[@as SignalID]]
+        reader:on_gui_changed_settings()
+    end
 end
 
 ---@param event EventData.on_gui_click
