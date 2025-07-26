@@ -1,4 +1,4 @@
-local glib = require("glib")
+local glib = require("__glib__.glib")
 
 ---@type table<defines.entity_status, LocalisedString>
 local status_names = {}
