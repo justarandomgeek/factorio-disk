@@ -72,6 +72,23 @@ local function update_gui(player)
     refs.status_label.caption = status_names[reader.entity.status]
 end
 
+local function signal_flow(name)
+    return {
+        args = {type = "flow", direction = "horizontal"},
+        style_mods = {vertical_align = "center"},
+        {
+            args = {type = "choose-elem-button", name = name, style = "slot_button_in_shallow_frame", elem_type = "signal"},
+            _elem_changed = handlers[name.."_changed"]
+        },
+        {
+            args = {type = "flow"},
+            {
+                args = {type = "label", style = "subheader_semibold_label", caption = {"diskreader-gui."..name}},
+            },
+        },
+    }
+end
+
 ---@param event EventData.on_gui_opened
 function gui.on_gui_opened(event)
     local entity = event.entity
@@ -160,34 +177,8 @@ function gui.on_gui_opened(event)
                     args = {type = "line"},
                     style_mods = {horizontally_stretchable = true},
                 },
-                {
-                    args = {type = "flow", direction = "horizontal"},
-                    style_mods = {vertical_align = "center"},
-                    {
-                        args = {type = "choose-elem-button", name = "read_signal", style = "slot_button_in_shallow_frame", elem_type = "signal"},
-                        _elem_changed = handlers.read_signal_changed
-                    },
-                    {
-                        args = {type = "flow"},
-                        {
-                            args = {type = "label", style = "subheader_semibold_label", caption = {"diskreader-gui.read-signal"}},
-                        },
-                    },
-                },
-                {
-                    args = {type = "flow", direction = "horizontal"},
-                    style_mods = {vertical_align = "center"},
-                    {
-                        args = {type = "choose-elem-button", name = "write_signal", style = "slot_button_in_shallow_frame", elem_type = "signal"},
-                        _elem_changed = handlers.write_signal_changed
-                    },
-                    {
-                        args = {type = "flow"},
-                        {
-                            args = {type = "label", style = "subheader_semibold_label", caption = {"diskreader-gui.write-signal"}},
-                        },
-                    },
-                },
+                signal_flow("read_signal"),
+                signal_flow("write_signal"),
                 {
                     args = {type = "flow", direction = "horizontal"},
                     style_mods = {vertical_align = "center"},
