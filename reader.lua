@@ -204,6 +204,14 @@ function reader:on_entity_settings_pasted(from)
   end
 end
 
+local info_page_ls = { "diskreader-gui.status-info-page" }
+local disk_clear_ls = { "diskreader-gui.status-clear" }
+local satus_idle_ls = { "diskreader-gui.status-idle" }
+local no_disk_status = {
+  diode = defines.entity_status_diode.yellow,
+  label = { "diskreader-gui.status-no-disk" },
+}
+
 ---@public
 function reader:on_tick()
   local entity = self.entity
@@ -216,13 +224,17 @@ function reader:on_tick()
   param.outputs = outputs
 
   local stack = self.stack
-  if stack.valid_for_read then
+  if not stack.valid_for_read then
+    entity.custom_status = no_disk_status
+  else
+    local did_read, did_write
     local flip = not not self.flip_wires
     local wire = control_wire[flip]
     if self.read_signal then
       local readcmd = entity.get_signal(self.read_signal, wire)
       if readcmd ~= 0 then
         if readcmd >= 1 and readcmd <= 512 then
+          did_read = { "diskreader-gui.status-read", readcmd }
           -- read a data frame
           local diskdata = stack.get_tag("disk_data_"..readcmd)
           if type(diskdata) == "table" then
@@ -250,8 +262,11 @@ function reader:on_tick()
                 i = i+1
               end
             end
+          else
+            stack.remove_tag("disk_data_"..readcmd)
           end
         elseif readcmd == -1 then
+          did_read = { "diskreader-gui.status-read", info_page_ls }
           -- read disk info
           -- stack.item_number on [0]high [1]low
           if self.itemid_high_signal then
@@ -305,6 +320,7 @@ function reader:on_tick()
       if writecmd ~= 0 then
         local data_wire = control_wire[not flip]
         if writecmd >= 1 and writecmd <= 512 then
+          did_write = { "diskreader-gui.status-write", writecmd }
           local data = entity.get_signals(data_wire)
           if data then
             -- write a data frame
@@ -313,6 +329,7 @@ function reader:on_tick()
             stack.remove_tag("disk_data_"..writecmd)
           end
         elseif writecmd == -1 then
+          did_write = { "diskreader-gui.status-write", info_page_ls }
           -- write disk info
           -- disk_id on [info]
           local id = 0
@@ -325,6 +342,7 @@ function reader:on_tick()
             stack.remove_tag("disk_id")
           end
         elseif writecmd == -512 then
+          did_write = disk_clear_ls
           -- clear disk
           local tags = {
             disk_id = stack.get_tag("disk_id"),
@@ -333,6 +351,19 @@ function reader:on_tick()
         end
       end
     end
+
+    local status_label
+    if did_read and did_write then
+      status_label = { "", did_read, " - ", did_write }
+    elseif did_read or did_write then
+      status_label = did_read or did_write
+    else
+      status_label = satus_idle_ls
+    end
+    entity.custom_status = {
+      diode = defines.entity_status_diode.green,
+      label = status_label,
+    }
   end
   control.parameters = param
 end
