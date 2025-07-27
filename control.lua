@@ -4,7 +4,7 @@ local gui = require("gui")
 script.on_init(function ()
   ---@class (exact) DiskStorage
   ---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
-  ---@field refs table<string, LuaGuiElement>
+  ---@field refs {[integer]:{[string]: LuaGuiElement}} # player_index, element ref name
   ---@field opened_readers {[integer?]:DiskReader} # player_index
   storage = {
     readers = {},
