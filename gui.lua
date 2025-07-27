@@ -103,7 +103,7 @@ local function signal_flow(name)
         {
             args = {type = "flow"},
             {
-                args = {type = "label", style = "subheader_semibold_label", caption = {"diskreader-gui."..name}},
+                args = {type = "label", style = "subheader_semibold_label", caption = {"diskreader-gui."..name}, tooltip = {"diskreader-gui-tooltip."..name} },
             },
         },
     }
