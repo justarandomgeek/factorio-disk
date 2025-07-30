@@ -10,14 +10,13 @@ data.extend{
     subgroup = "other",
     order = "s[item-with-tags]-o[item-with-tags]",
     stack_size = 1,
-    can_be_mod_opened=true
   },
   {
     type = "shortcut",
     name = "give-disk",
     order = "b[disk]-g[disk]",
     action = "spawn-item",
-    --technology_to_unlock = "construction-robotics",
+    technology_to_unlock = "circuit-network",
     item_to_spawn = "disk",
     style = "default",
     icon = "__disk__/graphics/disk-512.png",
@@ -28,10 +27,10 @@ data.extend{
   {
     type = "item",
     name = "diskreader",
-    icon = "__base__/graphics/icons/roboport.png",
+    icon = "__disk__/graphics/icon.png",
     icon_size = 64,
-    subgroup = "logistic-network",
-    order = "c[signal]-b[diskreader]",
+    subgroup = "circuit-network",
+    order = "c[combinators]-d[diskreader]",
     place_result="diskreader",
     stack_size = 50,
   },
@@ -48,8 +47,6 @@ data.extend{
     results = {
       { type="item", name="diskreader", amount=1 }
     },
-    icon = "__base__/graphics/icons/roboport.png",
-    icon_size = 64,
   },
   meld.meld(table.deepcopy(data.raw["decider-combinator"]["decider-combinator"]), {
     name = "diskreader",
