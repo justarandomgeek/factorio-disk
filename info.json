@@ -7,5 +7,8 @@
   "homepage": "",
   "contact": "justarandomgeek@gmail.com",
   "description": "Dense Integrated Storage Kludge: A removable data storage device for circuit networks holding 512 circuit frames.",
-  "dependencies": ["base", "glib"]
+  "dependencies": ["base", "glib"],
+  "package": {
+    "ignore": ["**/*.pdn"]
+  }
 }
