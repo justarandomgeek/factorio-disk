@@ -25,6 +25,14 @@ local handlers = {}
 local function update_gui(player)
     local reader = storage.opened_readers[player.index]
     if not reader then return end
+    if not reader:valid() then
+        storage.opened_readers[player.index] = nil
+        local window = player.gui.screen.diskreader_window
+        if window then
+            window.destroy()
+        end
+        return
+    end
     local refs = storage.refs[player.index]
     local control = reader.control
 
