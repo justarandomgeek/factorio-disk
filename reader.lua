@@ -408,7 +408,10 @@ end
 ---@public
 ---@return LocalisedString
 function reader:localised_name()
-  return self.entity.ghost_localised_name or self.entity.localised_name
+  if self.chest then
+    return  self.entity.localised_name
+  end
+  return self.entity.ghost_localised_name
 end
 
 return new
