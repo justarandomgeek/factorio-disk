@@ -16,6 +16,7 @@ local status_sprites = {
     [defines.entity_status_diode.red] = "utility.status_not_working",
     [defines.entity_status.working] = "utility.status_working",
     [defines.entity_status.frozen] = "utility.status_not_working",
+    [defines.entity_status.ghost] = "utility.status_yellow",
 }
 
 local handlers = {}
@@ -87,6 +88,9 @@ local function update_gui(player)
         refs.status_label.caption = custom_status.label
     else
         local status = reader.entity.status
+        if not status and not chest_stack then -- ghost
+            status = defines.entity_status.ghost
+        end
         refs.status_label.caption = status_names[status]
         refs.status_sprite.sprite = status_sprites[status] or "utility.status_blue"
     end
@@ -109,16 +113,13 @@ local function signal_flow(name)
     }
 end
 
----@param event EventData.on_gui_opened
-function gui.on_gui_opened(event)
-    local entity = event.entity
-    if not entity or not entity.valid or entity.name ~= "diskreader" then return end
-    local reader = storage.readers[entity.unit_number]
-    local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
-    local refs = storage.refs[event.player_index]
+---@param reader DiskReader
+---@param player LuaPlayer
+function gui.open(reader, player)
+    local refs = storage.refs[player.index]
     if not refs then
-        storage.refs[event.player_index] = {}
-        refs = storage.refs[event.player_index]
+        storage.refs[player.index] = {}
+        refs = storage.refs[player.index]
     end
     glib.add(player.gui.screen, {
         args = {type = "frame", name = "diskreader_window", direction = "vertical"},
@@ -131,7 +132,7 @@ function gui.on_gui_opened(event)
                 style_mods = {horizontal_spacing = 8},
                 drag_target = "diskreader_window",
                 {
-                    args = {type = "label", caption = entity.localised_name, style = "frame_title", ignored_by_interaction = true},
+                    args = {type = "label", caption = reader:localised_name(), style = "frame_title", ignored_by_interaction = true},
                     style_mods = {top_margin = -3, bottom_margin = 3},
                 },
                 {
@@ -173,7 +174,7 @@ function gui.on_gui_opened(event)
                     args = {type = "frame", style = "deep_frame_in_shallow_frame"},
                     {
                         args = {type = "entity-preview", style = "wide_entity_button"},
-                        elem_mods = {entity = entity},
+                        elem_mods = {entity = reader.entity},
                     },
                 },
                 {
@@ -280,7 +281,7 @@ function gui.on_gui_opened(event)
             }
         }
     }, refs)
-    storage.opened_readers[event.player_index] = reader
+    storage.opened_readers[player.index] = reader
     player.opened = refs.diskreader_window
     update_gui(player)
 end
@@ -308,6 +309,10 @@ function handlers.slot_clicked(event)
     local player = game.get_player(event.player_index)
     ---@cast player -?
     local reader = storage.opened_readers[event.player_index]
+    local stack = reader.stack
+    if not stack then
+        return
+    end
     local cursor_stack = player.cursor_stack
     if not cursor_stack then return end
     if cursor_stack.valid_for_read and cursor_stack.name ~= "disk" then
@@ -315,10 +320,10 @@ function handlers.slot_clicked(event)
             text = {"diskreader-gui.cant-be-used-as-data-storage", player.cursor_stack.prototype.localised_name},
             create_at_cursor = true,
         }
-    else
-        local chest_stack = reader.stack
-        cursor_stack.swap_stack(chest_stack)
+        return
     end
+    cursor_stack.swap_stack(stack)
+    
 end
 
 ---@param event EventData.on_gui_switch_state_changed

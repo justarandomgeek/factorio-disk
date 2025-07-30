@@ -4,10 +4,12 @@ local gui = require("gui")
 script.on_init(function ()
   ---@class (exact) DiskStorage
   ---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
+  ---@field ghost_readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
   ---@field refs {[integer]:{[string]: LuaGuiElement}} # player_index, element ref name
   ---@field opened_readers {[integer?]:DiskReader} # player_index
   storage = {
     readers = {},
+    ghost_readers = {},
     refs = {},
     opened_readers = {}
   }
@@ -16,6 +18,7 @@ end)
 script.on_configuration_changed(function (change)
   storage = {
     readers = storage.readers or {},
+    ghost_readers = storage.ghost_readers or {},
     refs = storage.refs or {},
     opened_readers = storage.opened_readers or {}
   }
@@ -30,10 +33,42 @@ script.on_event(defines.events.on_tick, function()
       storage.readers[unit_number] = nil
     end
   end
+  for unit_number, reader in pairs(storage.ghost_readers) do
+    if reader:valid() then
+      reader:on_tick()
+    else
+      reader:destroy()
+      storage.readers[unit_number] = nil
+    end
+  end
   gui.on_tick()
 end)
 
-script.on_event(defines.events.on_gui_opened, gui.on_gui_opened)
+---@param entity LuaEntity
+---@return DiskReader
+local function get_or_create_ghost_reader(entity)
+  local ghost_reader = storage.ghost_readers[entity.unit_number]
+  if not ghost_reader then
+    ghost_reader = new_reader(entity)
+    storage.ghost_readers[entity.unit_number] = ghost_reader
+  end
+  return ghost_reader
+end
+
+script.on_event(defines.events.on_gui_opened, function (event)
+  local entity = event.entity
+  if not entity then return end
+  local reader 
+  if entity.name == "diskreader" then
+    reader = storage.readers[entity.unit_number]
+  elseif entity.name == "entity-ghost" and entity.ghost_name == "diskreader" then
+    reader = get_or_create_ghost_reader(entity)
+  end
+  if reader then
+    local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
+    gui.open(reader, player)
+  end
+end)
 
 script.on_event(defines.events.on_script_trigger_effect, function (event)
   if event.effect_id == "diskreader-created" then
@@ -55,10 +90,20 @@ do
   script.on_event(defines.events.on_space_platform_mined_entity, on_mined_entity, filters)
 end
 
+script.on_event(defines.events.on_pre_entity_settings_pasted, function (event)
+  local destination = event.destination
+  if destination.name == "entity-ghost" and destination.ghost_name == "diskreader" then
+    -- prepare a ghost_reader with the old settings...
+    get_or_create_ghost_reader(destination)
+  end
+end)
+
 script.on_event(defines.events.on_entity_settings_pasted, function (event)
   local destination = event.destination
   if destination.name == "diskreader" then
     storage.readers[destination.unit_number]:on_entity_settings_pasted(event.source)
+  elseif destination.name == "entity-ghost" and destination.ghost_name == "diskreader" then
+    get_or_create_ghost_reader(destination):on_entity_settings_pasted(event.source)
   end
 end)
 
