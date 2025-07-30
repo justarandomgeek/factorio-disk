@@ -183,6 +183,7 @@ function gui.on_gui_opened(event)
                         args = {type = "sprite-button", name = "slot", style = "inventory_slot"},
                         _click = handlers.slot_clicked,
                     },
+                    --[[
                     {
                         args = {type = "flow"},
                         {
@@ -192,6 +193,7 @@ function gui.on_gui_opened(event)
                             args = {type = "sprite-button", style = "mini_button_aligned_to_text_vertically", sprite = "utility.rename_icon"},
                         },
                     },
+                    ]]
                 },
                 {
                     args = {type = "line"},
@@ -265,6 +267,7 @@ function gui.on_gui_opened(event)
                         }
                     },
                 },
+                --[[
                 {
                     args = {type = "line"},
                     style_mods = {horizontally_stretchable = true},
@@ -273,6 +276,7 @@ function gui.on_gui_opened(event)
                     args = {type = "button", name = "description_button", caption = {"gui-edit-label.add-description"}},
                     _click = handlers.edit_description,
                 },
+                ]]
             }
         }
     }, refs)
