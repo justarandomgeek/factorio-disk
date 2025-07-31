@@ -10,10 +10,12 @@ for k, v in pairs(defines.entity_status) do
     status_names[v] = name
 end
 
-local status_sprites = {
+local status_diode_sprites = {
     [defines.entity_status_diode.green] = "utility.status_working",
     [defines.entity_status_diode.yellow] = "utility.status_yellow",
     [defines.entity_status_diode.red] = "utility.status_not_working",
+}
+local status_sprites = {
     [defines.entity_status.working] = "utility.status_working",
     [defines.entity_status.frozen] = "utility.status_not_working",
     [defines.entity_status.ghost] = "utility.status_yellow",
@@ -92,7 +94,7 @@ local function update_gui(player)
     
     local custom_status = reader.entity.custom_status
     if custom_status then
-        refs.status_sprite.sprite = status_sprites[custom_status.diode]
+        refs.status_sprite.sprite = status_diode_sprites[custom_status.diode]
         refs.status_label.caption = custom_status.label
     else
         local status = reader.entity.status
