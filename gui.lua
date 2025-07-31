@@ -5,9 +5,7 @@ local gui = {}
 ---@type table<defines.entity_status, LocalisedString>
 local status_names = {}
 for k, v in pairs(defines.entity_status) do
-    name = string.gsub(k, "_", "-")
-    name = {"entity-status."..name}
-    status_names[v] = name
+    status_names[v] = {"entity-status."..string.gsub(k, "_", "-")}
 end
 
 local status_diode_sprites = {
