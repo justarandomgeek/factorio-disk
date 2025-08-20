@@ -1,3 +1,4 @@
+local sigstr = script.active_mods["signalstrings"] and require("__signalstrings__/signalstrings.lua")
 
 ---@class (exact) DiskReader
 ---@field public entity LuaEntity
@@ -317,6 +318,15 @@ function reader:on_tick()
                 constant = count,
               }
             end
+          elseif readcmd == -2 then
+            -- read label
+            if sigstr and stack.label then
+              local sigs = sigstr.string_to_decider_outputs(stack.label)
+              local base = #outputs
+              for i, sig in pairs(sigs) do
+                outputs[base+i] = sig
+              end
+            end
           end
         end
       end
@@ -346,6 +356,16 @@ function reader:on_tick()
               stack.set_tag("disk_id", id)
             else
               stack.remove_tag("disk_id")
+            end
+          elseif writecmd == -2 then
+            -- write label
+            if sigstr then
+              local sigs = entity.get_signals(data_wire)
+              if sigs then
+                stack.label = sigstr.signals_to_string(sigs)
+              else
+                stack.label = ""
+              end
             end
           elseif writecmd == -512 then
             did_write = disk_clear_ls
