@@ -102,6 +102,23 @@ local function update_gui(player)
         refs.status_label.caption = status_names[status]
         refs.status_sprite.sprite = status_sprites[status] or "utility.status_blue"
     end
+
+    if #reader.entity.combinator_description > 0 then
+       refs.description_subheader.visible = true
+       refs.description_label.visible = true
+       refs.description_scroll_pane.visible = true
+       refs.description_label.caption = reader.entity.combinator_description
+       refs.description_button.style = "mini_button_aligned_to_text_vertically"
+       refs.description_button.caption = ""
+       refs.description_button.sprite = "utility.rename_icon"
+    else
+       refs.description_subheader.visible = false
+       refs.description_label.visible = false
+       refs.description_scroll_pane.visible = false
+       refs.description_button.style = "button"
+       refs.description_button.caption = {"gui-edit-label.add-description"}
+       refs.description_button.sprite = nil
+    end
 end
 
 local function signal_flow(name)
@@ -276,16 +293,32 @@ function gui.open(reader, player)
                         }
                     },
                 },
-                --[[
                 {
                     args = {type = "line"},
                     style_mods = {horizontally_stretchable = true},
                 },
                 {
-                    args = {type = "button", name = "description_button", caption = {"gui-edit-label.add-description"}},
-                    _click = handlers.edit_description,
+                    args = {type = "flow", direction = "vertical"},
+                    {
+                        args = {type = "flow", direction = "horizontal"},
+                        {
+                            args = {type = "label", style = "semibold_label", name = "description_subheader", caption = {"description.player-description"}}
+                        },
+                        {
+                            args = {type = "sprite-button", name = "description_button", style = "mini_button_aligned_to_text_vertically",
+                                caption = {"gui-edit-label.add-description"}},
+                            _click = handlers.edit_description,
+                        },
+                    },
+                    {
+                        args = {type = "scroll-pane", style = "shallow_scroll_pane", name = "description_scroll_pane"},
+                        style_mods = {minimal_height = 100},
+                        {
+                            args = {type = "label", name = "description_label", caption = reader.entity.combinator_description},
+                            style_mods = {horizontally_squashable = true, single_line = false},
+                        },
+                    },
                 },
-                ]]
             }
         }
     }, refs)
@@ -346,6 +379,7 @@ end
 function handlers.edit_description(event)
     local player = game.get_player(event.player_index)
     ---@cast player -?
+    local reader = storage.opened_readers[player.index]
     local refs = storage.refs[event.player_index]
     glib.add(player.gui.screen, {
         args = {type = "frame", name = "description_window", style = "inset_frame_container_frame", direction = "vertical"},
@@ -353,26 +387,67 @@ function handlers.edit_description(event)
         elem_mods = {auto_center = true},
         _closed = handlers.close_description_window,
         {
-            args = {type = "flow"},
-            style_mods = {horizontal_spacing = 8},
-            drag_target = "description_window",
+            args = {type = "flow", direction = "vertical"},
+            style_mods = {vertical_spacing = 0},
             {
-                args = {type = "label", caption = {"gui-edit-label.edit-description"}, style = "frame_title", ignored_by_interaction = true},
-                style_mods = {top_margin = -3, bottom_margin = 3},
+                args = {type = "flow", style = "frame_header_flow"},
+                style_mods = {horizontal_spacing = 8},
+                drag_target = "description_window",
+                {
+                    args = {type = "label", caption = {"gui-edit-label.edit-description"}, style = "frame_title", ignored_by_interaction = true},
+                    style_mods = {top_margin = -3, bottom_margin = 3},
+                },
+                {
+                    args = {type = "empty-widget", style = "draggable_space_header", ignored_by_interaction = true},
+                    style_mods = {height = 24, right_margin = 4, horizontally_stretchable = true},
+                },
+                {
+                    args = {type = "sprite-button", style = "cancel_close_button", sprite = "utility/close"},
+                    _click = handlers.close_description_window,
+                }
             },
             {
-                args = {type = "empty-widget", style = "draggable_space_header", ignored_by_interaction = true},
-                style_mods = {height = 24, right_margin = 4, horizontally_stretchable = true},
+                args = {type = "flow", direction = "vertical", style = "inset_frame_container_vertical_flow"},
+                style_mods = {horizontal_align = "right"},
+                {
+                    args = {type = "text-box", name = "description_textbox", style = "edit_blueprint_description_textbox",
+                        icon_selector = true, text = reader.entity.combinator_description},
+                    elem_mods = {word_wrap = true},
+                },
             },
             {
-                args = {type = "sprite-button", style = "cancel_close_button", sprite = "utility/close"},
-                _click = handlers.close_description_window,
+                args = {type = "flow"},
+                style_mods = {top_margin = 12}, -- easiest solution to not add another flow
+                {
+                    args = {type = "empty-widget", style = "draggable_space"},
+                    style_mods = {horizontally_stretchable = true, vertically_stretchable = true, left_margin = 0},
+                },
+                {
+                    args = {type = "button", style = "confirm_button", caption = {"gui-edit-label.save-description"}},
+                    _click = handlers.save_description,
+                    _confirm = handlers.save_description,
+                },
             }
         },
     }, refs)
+    refs.description_textbox.focus()
     storage.do_not_close_gui = true
     player.opened = refs.description_window
     storage.do_not_close_gui = nil
+end
+
+function handlers.save_description(event)
+    local player = game.get_player(event.player_index) --[[@as LuaPlayer]]
+    local reader = storage.opened_readers[player.index]
+    local refs = storage.refs[event.player_index]
+    local new_description_text
+    if player.gui.screen.description_window then
+        new_description_text = refs.description_textbox.text
+        player.gui.screen.description_window.destroy()
+        player.opened = player.gui.screen.diskreader_window
+    end
+    reader.entity.combinator_description = new_description_text
+    update_gui(player)
 end
 
 function handlers.close_description_window(event)
