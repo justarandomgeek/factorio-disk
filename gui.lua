@@ -39,8 +39,10 @@ local function update_gui(player)
     local chest_stack = reader.stack
     if chest_stack and chest_stack.valid_for_read then
         refs.slot.sprite = "item."..chest_stack.name
+        refs.disk_label.caption = chest_stack.label or {"diskreader-gui.label-no-label"}
     else
         refs.slot.sprite = nil
+        refs.disk_label.caption = {"diskreader-gui.label-no-disk"}
     end
 
     -- fields in reader are already fresh because they ticked first before the gui update
@@ -209,17 +211,17 @@ function gui.open(reader, player)
                         args = {type = "sprite-button", name = "slot", style = "inventory_slot"},
                         _click = handlers.slot_clicked,
                     },
-                    --[[
                     {
                         args = {type = "flow"},
                         {
-                            args = {type = "label", style = "subheader_semibold_label", caption = "Disk name"},
+                            args = {type = "label", style = "subheader_semibold_label", name = "disk_label", caption = {"diskreader-gui.label-no-label"}},
                         },
+                        --[[
                         {
                             args = {type = "sprite-button", style = "mini_button_aligned_to_text_vertically", sprite = "utility.rename_icon"},
                         },
+                        ]]
                     },
-                    ]]
                 },
                 {
                     args = {type = "line"},

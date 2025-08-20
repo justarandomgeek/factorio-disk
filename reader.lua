@@ -211,6 +211,7 @@ function reader:on_entity_settings_pasted(from)
 end
 
 local info_page_ls = { "diskreader-gui.status-info-page" }
+local disk_label_ls = { "diskreader-gui.status-disk-label" }
 local disk_clear_ls = { "diskreader-gui.status-clear" }
 local satus_idle_ls = { "diskreader-gui.status-idle" }
 local no_disk_status = {
@@ -320,11 +321,14 @@ function reader:on_tick()
             end
           elseif readcmd == -2 then
             -- read label
-            if sigstr and stack.label then
-              local sigs = sigstr.string_to_decider_outputs(stack.label)
-              local base = #outputs
-              for i, sig in pairs(sigs) do
-                outputs[base+i] = sig
+            if sigstr then
+              did_read = { "diskreader-gui.status-read", disk_label_ls }
+              if stack.label then
+                local sigs = sigstr.string_to_decider_outputs(stack.label)
+                local base = #outputs
+                for i, sig in pairs(sigs) do
+                  outputs[base+i] = sig
+                end
               end
             end
           end
@@ -360,6 +364,7 @@ function reader:on_tick()
           elseif writecmd == -2 then
             -- write label
             if sigstr then
+              did_write = { "diskreader-gui.status-write", disk_label_ls }
               local sigs = entity.get_signals(data_wire)
               if sigs then
                 stack.label = sigstr.signals_to_string(sigs)
