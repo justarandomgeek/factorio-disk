@@ -38,9 +38,11 @@ local function update_gui(player)
 
     local chest_stack = reader.stack
     if chest_stack and chest_stack.valid_for_read then
+        refs.disk_label_edit_button.visible = true
         refs.slot.sprite = "item."..chest_stack.name
         refs.disk_label.caption = chest_stack.label or {"diskreader-gui.label-no-label"}
     else
+        refs.disk_label_edit_button.visible = false
         refs.slot.sprite = nil
         refs.disk_label.caption = {"diskreader-gui.label-no-disk"}
     end
@@ -222,7 +224,7 @@ function gui.open(reader, player)
                             _confirmed = handlers.edit_label
                         },
                         {
-                            args = {type = "sprite-button", style = "mini_button_aligned_to_text_vertically_when_centered", sprite = "utility.rename_icon", tooltip = {"gui-edit-label.edit-label"}},
+                            args = {type = "sprite-button", name = "disk_label_edit_button", style = "mini_button_aligned_to_text_vertically_when_centered", sprite = "utility.rename_icon", tooltip = {"gui-edit-label.edit-label"}},
                             _click = handlers.edit_label
                         },
                     },
