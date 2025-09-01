@@ -38,7 +38,7 @@ script.on_event(defines.events.on_tick, function()
       reader:on_tick()
     else
       reader:destroy()
-      storage.readers[unit_number] = nil
+      storage.ghost_readers[unit_number] = nil
     end
   end
   gui.on_tick()
