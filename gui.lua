@@ -377,12 +377,13 @@ function handlers.slot_clicked(event)
             return
         end
         player.play_sound{
+            path = "item-drop/disk",
+        }
+    elseif stack.valid_for_read then
+        player.play_sound{
             path = "item-pick/disk",
         }
     end
-    player.play_sound{
-        path = "item-drop/disk",
-    }
     cursor_stack.swap_stack(stack)
 end
 
