@@ -123,11 +123,17 @@ do
     if not reader then return end
     if player.is_cursor_empty() then
       reader:take_disk(player)
+      player.play_sound{
+          path = "item-move/disk",
+      }
     else
       local cursor = player.cursor_stack
       if not (cursor and cursor.valid_for_read) then return end
       if cursor.name == "disk" then
         reader:put_disk(cursor)
+        player.play_sound{
+            path = "item-move/disk",
+        }
       end
     end
   end
