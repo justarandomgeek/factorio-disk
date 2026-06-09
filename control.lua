@@ -1,19 +1,17 @@
 local new_reader = require("reader")
 local gui = require("gui")
 
-script.on_init(function ()
-  ---@class (exact) DiskStorage
-  ---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
-  ---@field ghost_readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
-  ---@field refs {[integer]:{[string]: LuaGuiElement}} # player_index, element ref name
-  ---@field opened_readers {[integer?]:DiskReader} # player_index
-  storage = {
-    readers = {},
-    ghost_readers = {},
-    refs = {},
-    opened_readers = {}
-  }
-end)
+---@class (exact) DiskStorage
+---@field readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
+---@field ghost_readers {[integer?]:DiskReader}  # integer? so unit_number works with it...
+---@field refs {[integer]:{[string]: LuaGuiElement}} # player_index, element ref name
+---@field opened_readers {[integer?]:DiskReader} # player_index
+storage = {
+  readers = {},
+  ghost_readers = {},
+  refs = {},
+  opened_readers = {}
+}
 
 script.on_configuration_changed(function (change)
   storage = {
@@ -24,7 +22,7 @@ script.on_configuration_changed(function (change)
   }
 end)
 
----@param collection {[integer?]:{ valid:(fun(self:self):boolean), (on_tick:fun(self:self)), (destroy:fun(self:self))  }}
+---@param collection {[integer?]:{ valid:(fun(self:self):boolean), on_tick:fun(self:self), destroy:fun(self:self)  }}
 local function tick_or_cleanup(collection)
   for unit_number, obj in pairs(collection) do
     if obj:valid() then
@@ -78,7 +76,7 @@ script.on_event(defines.events.on_script_trigger_effect, function (event)
 end)
 
 do
-  ---@param event {entity:LuaEntity, buffer:LuaInventory}
+  ---@param event EventData.on_player_mined_entity|EventData.on_robot_mined_entity|EventData.on_space_platform_mined_entity
   local function on_mined_entity(event)
     storage.readers[event.entity.unit_number]:take_disk(event.buffer)
   end
@@ -119,6 +117,7 @@ do
     if not allow_controller_types[player.controller_type] then return end
     local selected = player.selected
     if not (selected and selected.name=="diskreader" and player.can_reach_entity(selected)) then return end
+    ---@cast selected -?
     local reader = storage.readers[selected.unit_number]
     if not reader then return end
     if player.is_cursor_empty() then
@@ -129,6 +128,7 @@ do
     else
       local cursor = player.cursor_stack
       if not (cursor and cursor.valid_for_read) then return end
+      ---@cast cursor -?
       if cursor.name == "disk" then
         reader:put_disk(cursor)
         player.play_sound{
