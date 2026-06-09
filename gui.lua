@@ -78,7 +78,7 @@ local function update_gui(player)
         local e = cf.add{type = "empty-widget"}
         e.style.horizontally_stretchable = true
 
-        cf.add{type = "label", style = "subheader_caption_label", caption = {"", {"gui-arithmetic.input"}, ":"}}
+        cf.add{type = "label", style = "subheader_caption_label", caption = {"", {"gui-arithmetic.output"}, ":"}}
         local output_connector_red = control.get_circuit_network(defines.wire_connector_id.combinator_output_red)
         local output_connector_green = control.get_circuit_network(defines.wire_connector_id.combinator_output_green)
         if not output_connector_red and not output_connector_green then
