@@ -99,7 +99,6 @@ local default_signal = {
   },
 }
 
----@type {[SignalIDType]:LuaCustomTable<string>}
 local typeinfos = {
   item = prototypes.item,
   fluid = prototypes.fluid,
@@ -288,7 +287,7 @@ function reader:on_tick()
               outputs[#outputs+1] = {
                 signal = self.itemid_low_signal,
                 copy_count_from_input = false,
-                constant = math.fmod(stack.item_number, 0x100000000),
+                constant = math.fmod(stack.item_number, 0x100000000) --[[@as integer]],
               }
             end
             -- stack.get_tag("disk_id") on [info]
