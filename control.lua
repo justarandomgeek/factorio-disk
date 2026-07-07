@@ -1,3 +1,4 @@
+---@namespace disk
 local new_reader = require("reader")
 local gui = require("gui")
 

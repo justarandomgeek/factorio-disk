@@ -1,3 +1,4 @@
+---@namespace disk
 local glib = require("__glib__.glib")
 
 local gui = {}

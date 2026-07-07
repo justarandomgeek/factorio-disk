@@ -1,3 +1,5 @@
+---@namespace disk
+
 local sigstr = script.active_mods["signalstrings"] and require("__signalstrings__/signalstrings.lua")
 
 ---@class (exact) DiskReader
@@ -297,7 +299,7 @@ function reader:on_tick()
                 outputs[#outputs+1] = {
                   signal = self.userid_signal,
                   copy_count_from_input = false,
-                  constant = info,
+                  constant = info--[[@as integer]],
                 }
               else
                 stack.remove_tag("disk_id")
