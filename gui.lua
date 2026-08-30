@@ -41,10 +41,12 @@ local function update_gui(player)
     if chest_stack and chest_stack.valid_for_read then
         refs.disk_label_edit_button.visible = true
         refs.slot.sprite = "item."..chest_stack.name
+        refs.slot.elem_tooltip = {type = "item", name = chest_stack.name, quality = chest_stack.quality.name}
         refs.disk_label.caption = chest_stack.label or {"diskreader-gui.label-no-label"}
     else
         refs.disk_label_edit_button.visible = false
         refs.slot.sprite = nil
+        refs.slot.elem_tooltip = nil
         refs.disk_label.caption = {"diskreader-gui.label-no-disk"}
     end
 

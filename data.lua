@@ -4,8 +4,8 @@ data.extend{
   {
     type = "item-with-tags",
     name = "disk",
-    icon = "__disk__/graphics/disk-512.png",
-    icon_size = 32,
+    icon = "__disk__/graphics/disk-icon.png",
+    icon_size = 64,
     flags = { "not-stackable", "spawnable" },
     subgroup = "other",
     order = "s[item-with-tags]-o[item-with-tags]",
@@ -19,15 +19,15 @@ data.extend{
     technology_to_unlock = "circuit-network",
     item_to_spawn = "disk",
     style = "default",
-    icon = "__disk__/graphics/disk-512.png",
-    icon_size = 32, -- 56
-    small_icon = "__disk__/graphics/disk-512.png",
-    small_icon_size = 32 -- 24
+    icon = "__disk__/graphics/shortcut.png",
+    icon_size = 56,
+    small_icon = "__disk__/graphics/shortcut.png",
+    small_icon_size = 24
   },
   {
     type = "item",
     name = "diskreader",
-    icon = "__disk__/graphics/icon.png",
+    icon = "__disk__/graphics/disk-combinator-icon.png",
     icon_size = 64,
     subgroup = "circuit-network",
     order = "c[combinators]-d[diskreader]",
@@ -49,6 +49,7 @@ data.extend{
     },
   },
   meld.meld(table.deepcopy(data.raw["decider-combinator"]["decider-combinator"]), {
+    keep_animation = true,
     name = "diskreader",
     minable = {
       result = "diskreader",
@@ -66,43 +67,102 @@ data.extend{
         }
       }
     },
-    sprites = data.raw["selector-combinator"]["selector-combinator"].sprites,
+    sprites = meld.overwrite(make_4way_animation_from_spritesheet({ layers =
+      {
+        {
+          scale = 0.5,
+          filename = "__disk__/graphics/disk-combinator-entity.png",
+          width = 154,
+          height = 160,
+          shift = util.by_pixel( 1.0, -1.0)
+        },
+        {
+          scale = 0.5,
+          filename = "__base__/graphics/entity/combinator/selector-combinator-shadow.png",
+          width = 134,
+          height = 94,
+          shift = util.by_pixel( 8.0, 7.0),
+          draw_as_shadow = true
+        }
+      }
+    })),
     activity_led_sprites = data.raw["selector-combinator"]["selector-combinator"].activity_led_sprites,
     input_connection_points = data.raw["selector-combinator"]["selector-combinator"].input_connection_points,
     output_connection_points = data.raw["selector-combinator"]["selector-combinator"].output_connection_points,
     equal_symbol_sprites = meld.overwrite({
-      north = util.draw_as_glow
-        {
-          scale = 0.5,
-          filename = "__disk__/graphics/combinator-display.png",
-          width = 30,
-          height = 22,
-          shift = util.by_pixel(0, -4.5)
+      north = {
+        layers = {util.draw_as_glow{
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-display.png",
+            width = 30,
+            height = 22,
+            shift = util.by_pixel_hr(1, -10)
+          },
+          {
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-sticking-out.png",
+            width = 154,
+            height = 160,
+            x = 154*0,
+            shift = util.by_pixel( 1.0, -1.0)
+          }
         },
-      east = util.draw_as_glow
-        {
-          scale = 0.5,
-          filename = "__disk__/graphics/combinator-display.png",
-          width = 30,
-          height = 22,
-          shift = util.by_pixel(0, -10.5)
+      },
+      east = {
+        layers = {util.draw_as_glow{
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-display.png",
+            width = 30,
+            height = 22,
+            shift = util.by_pixel_hr(1, -22)
+          },
+          {
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-sticking-out.png",
+            width = 154,
+            height = 160,
+            x = 154*1,
+            shift = util.by_pixel( 1.0, -1.0)
+          }
         },
-      south = util.draw_as_glow
-        {
-          scale = 0.5,
-          filename = "__disk__/graphics/combinator-display.png",
-          width = 30,
-          height = 22,
-          shift = util.by_pixel(0, -4.5)
+      },
+      south = {
+        layers = {
+          util.draw_as_glow{
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-display.png",
+            width = 30,
+            height = 22,
+            shift = util.by_pixel_hr(1, -10)
+          },
+          {
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-sticking-out.png",
+            width = 154,
+            height = 160,
+            x = 154*2,
+            shift = util.by_pixel( 1.0, -1.0)
+          }
         },
-      west = util.draw_as_glow
-        {
-          scale = 0.5,
-          filename = "__disk__/graphics/combinator-display.png",
-          width = 30,
-          height = 22,
-          shift = util.by_pixel(0, -10.5)
-        }
+      },
+      west = {
+        layers = {util.draw_as_glow{
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-display.png",
+            width = 30,
+            height = 22,
+            shift = util.by_pixel_hr(1, -22)
+          },
+          {
+            scale = 0.5,
+            filename = "__disk__/graphics/disk-sticking-out.png",
+            width = 154,
+            height = 160,
+            x = 154*3,
+            shift = util.by_pixel( 1.0, -1.0)
+          }
+        },
+      }
     }),
     greater_symbol_sprites = meld.delete(),
     less_symbol_sprites = meld.delete(),
